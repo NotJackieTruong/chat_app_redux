@@ -8,14 +8,21 @@ import Messages from './Messages'
 import MessageInput from './MessageInput'
 import Grid from '@material-ui/core/Grid'
 
+import {useDispatch, useSelector, useStore} from 'react-redux'
+import {setUserList} from '../actions/userActions'
+import {setChats, setActiveChat} from '../actions/chatActions'
 
 const ChatContainer = (props)=>{
-    var user = props.user
-    var logout = props.logout
-
+    const socket = useSelector(state => state.socketReducer.socket)
+    const user = useSelector(state => state.userReducer.user)
+    const userList = useSelector(state => state.userReducer.userList)
+    const chats = useSelector(state => state.chatReducer.chats)
+    const activeChat = useSelector(state => state.chatReducer.activeChat)
+    const dispatch = useDispatch()
+    
     var [chats, setChats] = useState([])
     var [activeChat, setActiveChat] = useState(null)
-    var [userList, setUserList] = useState([])
+    // var [userList, setUserList] = useState([])
 
     const chatsStateRef = useRef()
     chatsStateRef.current = chats
@@ -23,32 +30,13 @@ const ChatContainer = (props)=>{
     const activeChatStateRef = useRef()
     activeChatStateRef.current = activeChat
 
-    const userListStateRef = useRef()
-    userListStateRef.current = userList
+    // const userListStateRef = useRef()
+    // userListStateRef.current = userList
 
     // componentDidMount()
-    useEffect(()=>{
-        const socket = props.socket
-        // socket.emit(COMMUNITY_CHAT, resetChat)
-        // socket.on(USER_CONNECTED, (user)=>{
-        //     const newUserList = [...userListStateRef.current, user]
-        //     // console.log('user from chat container: ', newUserList)
-            
-        //     setUserList(newUserList)
-        // })
-        
+    useEffect(()=>{        
         initSocket(socket)
     }, [])
-
-    // useEffect(()=>{
-    //     const socket = props.socket
-    //     return()=>{
-    //         socket.off(PRIVATE_MESSAGE)
-    //         socket.off(USER_CONNECTED)
-    //         socket.off(USER_DISCONNECTED)
-
-    //     }
-    // }, [])
 
     var initSocket = (socket)=>{
         socket.emit(COMMUNITY_CHAT, resetChat)
@@ -59,23 +47,21 @@ const ChatContainer = (props)=>{
         })
         // listen on event when user is connected
         socket.on(USER_CONNECTED, (connectedUsers)=>{
-            setUserList([])
+            console.log('connected user: ',connectedUsers)
+
             Object.keys(connectedUsers).map(function(key){
-                const newUserList = [...userListStateRef.current, connectedUsers[key]]
-                setUserList(newUserList)
+                dispatch(setUserList(connectedUsers[key]))
             })
         })
 
         // listen on event when user is disconnected
         socket.on(USER_DISCONNECTED, (connectedUsers)=>{
-            console.log('connected user: ',connectedUsers)
             // const removedUsers = userListStateRef.current.filter(otherUser => !connectedUsers.some(connectedUser=>connectedUser.id === otherUser.id))
             // console.log('remove user: ', removedUsers)
             // removeUsersFromChat(removedUsers)
-            setUserList([])
             Object.keys(connectedUsers).map(function(key){
-                const newUserList = [...userListStateRef.current, connectedUsers[key]]
-                setUserList(newUserList)
+                dispatch(setUserList(connectedUsers[key]))
+
             })
         })
 
@@ -94,10 +80,9 @@ const ChatContainer = (props)=>{
 
 
     var addChat = (chat, reset=false)=>{
-        const socket = props.socket
-        const newChats = reset? [chat] : [...chatsStateRef.current, chat]
+        const newChats = reset? [chat] : [...chats, chat]
         // console.log('newChats: ', newChats, ', reset: ', reset, ', chat: ', chat, ', chats: ', chatsStateRef.current)
-        setChats(newChats)
+        dispatch(setChats(chat))
         // setActiveChat(reset? chat: activeChatStateRef.current)
         
         // check if has a new chat, then set that chat active
@@ -106,21 +91,21 @@ const ChatContainer = (props)=>{
 
         // receive message event from messageEvent namespace
         socket.on(messageEvent, (message)=>{
-            var newChats2 = newChats.map((newChat)=>{
+            var newChats2 = chats.map((newChat)=>{
                 // only append messages array of an active chat
                 if(newChat.id === chat.id){
                     newChat.messages.push(message)
                 }
                 return newChat
             })
-            setChats(newChats2)
+            dispatch(setChats(newChats2))
         })
 
         // receive typing event from typingEvent namespace
         socket.on(typingEvent, ({isTyping, user})=>{
             // only show the "user is typing" for the client that is not the sender
-			if(user !== props.user.name){
-				var newChats3 = newChats.map((newChat)=>{
+			if(user !== user.name){
+				var newChats3 = chats.map((newChat)=>{
 					if(newChat.id === chat.id){
                         // typingUser = [] (initiate)
 
@@ -138,7 +123,7 @@ const ChatContainer = (props)=>{
 					}
 					return newChat
 				})
-                setChats(newChats3)
+                dispatch(setChats(newChats3))
             }
 		})
 
@@ -166,22 +151,22 @@ const ChatContainer = (props)=>{
     }
 
     var addUserToChat = ({chatId, newUser})=>{
-        const newChats = chatsStateRef.current.map(chat=>{
+        const newChats = chats.map(chat=>{
             if(chat.id === chatId){
                 return Object.assign({}, chat, {users: [...chat.users, newUser]})
             }
             return chat
         })
-        setChats(newChats)
+        dispatch(setChats(newChats))
     }
 
     // remove users from chat
     var removeUsersFromChat = (removeUsers)=>{
-        const newChats = chatsStateRef.map(chat =>{
+        const newChats = chats.map(chat =>{
             let newUsers = chat.users.filter(user=> !removeUsers.includes(user))
             return Object.assign({}, chat, {users: newUsers})
         })
-        setChats(newChats)
+        dispatch(setChats(newChats))
     }
     // console.log('current state of chats: ', chats)
     // render component
@@ -190,7 +175,6 @@ const ChatContainer = (props)=>{
             <Grid container>
                 <Grid item xs={3}>  
                     <Sidebar 
-                    logout = {logout}
                     user = {props.user}
                     users={userList}
                     chats={chats}

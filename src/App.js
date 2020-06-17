@@ -1,11 +1,23 @@
 import React from 'react';
-import Layout from './components/Layout'
 import './index.css'
+
+// import reducers, store
+import reducer from './reducers/index'
+import {createStore} from 'redux'
+import {Provider} from 'react-redux'
+
+// import components
+import Layout from './components/Layout'
+
+const store = createStore(reducer)
+
 function App() {
+  console.log('init state: ',store.getState())
+
   return (
-    <div className="container">
-      <Layout title="Chat app 123456"/>
-    </div>
+    <Provider store={store}>
+      <Layout/>
+    </Provider>
   );
 }
 

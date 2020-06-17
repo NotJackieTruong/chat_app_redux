@@ -16,6 +16,11 @@ import Tooltip from '@material-ui/core/Tooltip'
 
 import {createChatNameFromUser} from '../Factories'
 
+import {useDispatch, useSelector} from 'react-redux'
+import {logout} from '../actions/userActions'
+
+
+
 const useStyles = makeStyles((theme) => ({
     search: {
         position: 'relative',
@@ -72,6 +77,9 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 const SidebarHeader = (props) => {
+    const dispatch = useDispatch()
+    const user = useSelector(state=>state.userReducer.user)
+
     const [anchorEl, setAnchorEl] = useState(null)
     const open = Boolean(anchorEl)
 
@@ -91,7 +99,7 @@ const SidebarHeader = (props) => {
                     <Tooltip title="User account" placement="bottom-end">
                         <IconButton size="medium" onClick={handleClick}>
                             {/* <AccountCircle className={classes.icons}/> */}
-                            {props.user.name[0].toUpperCase()}
+                            {user? user.name[0].toUpperCase(): "Unknown"[0].toUpperCase()}
                         </IconButton>
                     </Tooltip>
 
@@ -108,7 +116,7 @@ const SidebarHeader = (props) => {
                         getContentAnchorEl={null}
                     >
                         <MenuItem onClick={handleClose}>Profile</MenuItem>
-                        <MenuItem onClick={() => { handleClose(); props.logout(); }}>Logout</MenuItem>
+                        <MenuItem onClick={() => { handleClose(); dispatch(logout()) }}>Logout</MenuItem>
                     </Menu>
 
                 </Grid>
@@ -219,7 +227,7 @@ const Sidebar = (props) => {
     console.log('active chat from sidebar: ', props.activeChat)
     return (
         <div className="container" style={{ borderRight: '1px solid lightgrey', height: '100vh' }}>
-            <SidebarHeader user={props.user} logout={props.logout}/>
+            <SidebarHeader/>
             <SidebarSearch onSendPrivateMessage={props.onSendPrivateMessage}/>
             {/* <Chat key="somethin" className="something" user="anc" lastMessage="yo what's up"/> */}
             <div className="active-chat" style={{ marginTop: '2vh' }}>

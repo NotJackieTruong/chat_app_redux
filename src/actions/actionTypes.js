@@ -1,0 +1,12 @@
+// socket actions
+export const SET_SOCKET = "SET_SOCKET"
+
+// user actions
+export const SET_USER = "SET_USER"
+export const SET_NICKNAME = "SET_NICKNAME"
+export const LOG_OUT = "LOG_OUT"
+export const SET_USER_LIST = "SET_USER_LIST"
+
+// chat actions
+export const SET_CHAT = "SET_CHAT"
+export const SET_ACTIVE_CHAT = "SET_ACTIVE_CHAT"

@@ -1,48 +1,46 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useEffect} from 'react'
 import io from 'socket.io-client'
 import {USER_CONNECTED, LOGOUT, VERIFY_USER} from '../Events'
 import LoginForm from './LoginForm'
 import ChatContainer from './ChatContainer'
 
+// import dispatch, selector
+import {useDispatch, useSelector} from 'react-redux'
+import {setSocket} from '../actions/socketActions' // import set socket function
+import {setUser} from '../actions/userActions'
 // port 3001: server
 // port 3000: reactjs
 const socketURL = "http://localhost:3001"
 const Layout = (props)=>{
-  const [socket, setSocket] = useState(null)
-  // user account
-  const [user, setUser] = useState(null)
-  const userStateRef = useRef()
-  userStateRef.current = user
+  const dispatch = useDispatch()
+
+  const socket = useSelector(state => state.socketReducer.socket)
+  const user = useSelector(state => state.userReducer.user)
+  console.log('user: ', user)
 
   // component will mount
   useEffect(()=>{
     const socket = io(socketURL)
     socket.on('connect', ()=>{
-      if(userStateRef.current){
-        reconnect(socket)
-      }else{
-        console.log('Socket connected!')
+      // if(user){
+      //   reconnect(socket)
+      // }else{
+      // }
+      console.log('Socket connected!')
 
-      }
     })
-    setSocket(socket)
+    dispatch(setSocket(socket))
   }, [])
 
   var reconnect = (socket)=>{
-    socket.emit(VERIFY_USER, userStateRef.current.name, ({isUser, user})=>{
+    socket.emit(VERIFY_USER, user.name, ({isUser, user})=>{
       if(isUser){
-        setUser(null)
+        dispatch(setUser({}))
       } else {
-        setUser(user)
+        dispatch(setUser(user))
       }
     })
 
-  }
-
-  var setUserFunc = (user)=>{
-    // send user connected event to the server
-    socket.emit(USER_CONNECTED, user)
-    setUser(user)
   }
 
   var setLogoutFunc = ()=>{
@@ -52,8 +50,7 @@ const Layout = (props)=>{
 
   return(
     <div className="contaienr">
-      {!user? <LoginForm socket={socket} setUser={setUserFunc}/>:<ChatContainer user={user} socket={socket} logout={setLogoutFunc}/>}
-      {/* <ChatContainer user={user} socket={socket} logout={setLogoutFunc}/> */}
+      {JSON.stringify(user) === '{}' || user === undefined ? <LoginForm/>:<div>Entered to main message page</div>}
     </div>
   )
 }
