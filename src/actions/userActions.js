@@ -1,4 +1,4 @@
-import {SET_USER, SET_NICKNAME, LOG_OUT, SET_USER_LIST} from './actionTypes'
+import {SET_USER, SET_NICKNAME, LOG_OUT, SET_USER_LIST, SET_RECEIVER} from './actionTypes'
 
 export const setUser = (user)=>({
   type: SET_USER,
@@ -17,4 +17,9 @@ export const logout = ()=>({
 export const setUserList = (userList)=>({
   type: SET_USER_LIST,
   payload: userList
+})
+
+export const setReceiver = (receiver)=>({
+  type: SET_RECEIVER,
+  payload: receiver
 })

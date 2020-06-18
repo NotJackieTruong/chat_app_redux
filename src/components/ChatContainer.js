@@ -14,25 +14,15 @@ import {setChats, setActiveChat} from '../actions/chatActions'
 
 const ChatContainer = (props)=>{
     const socket = useSelector(state => state.socketReducer.socket)
+
     const user = useSelector(state => state.userReducer.user)
     const userList = useSelector(state => state.userReducer.userList)
+
     const chats = useSelector(state => state.chatReducer.chats)
     const activeChat = useSelector(state => state.chatReducer.activeChat)
+
     const dispatch = useDispatch()
     
-    var [chats, setChats] = useState([])
-    var [activeChat, setActiveChat] = useState(null)
-    // var [userList, setUserList] = useState([])
-
-    const chatsStateRef = useRef()
-    chatsStateRef.current = chats
-
-    const activeChatStateRef = useRef()
-    activeChatStateRef.current = activeChat
-
-    // const userListStateRef = useRef()
-    // userListStateRef.current = userList
-
     // componentDidMount()
     useEffect(()=>{        
         initSocket(socket)
@@ -48,9 +38,9 @@ const ChatContainer = (props)=>{
         // listen on event when user is connected
         socket.on(USER_CONNECTED, (connectedUsers)=>{
             console.log('connected user: ',connectedUsers)
-
             Object.keys(connectedUsers).map(function(key){
-                dispatch(setUserList(connectedUsers[key]))
+                const newUserList = [...userList, connectedUsers[key]]
+                dispatch(setUserList(newUserList))
             })
         })
 
@@ -60,11 +50,10 @@ const ChatContainer = (props)=>{
             // console.log('remove user: ', removedUsers)
             // removeUsersFromChat(removedUsers)
             Object.keys(connectedUsers).map(function(key){
-                dispatch(setUserList(connectedUsers[key]))
-
+                const newUserList = [...userList, connectedUsers[key]]
+                dispatch(setUserList(newUserList))
             })
         })
-
         socket.on(NEW_CHAT_USER, addUserToChat)
 
         // 
@@ -78,11 +67,11 @@ const ChatContainer = (props)=>{
         return addChat(chat, true)
     }
 
-
     var addChat = (chat, reset=false)=>{
         const newChats = reset? [chat] : [...chats, chat]
         // console.log('newChats: ', newChats, ', reset: ', reset, ', chat: ', chat, ', chats: ', chatsStateRef.current)
-        dispatch(setChats(chat))
+        dispatch(setChats(newChats))
+        dispatch(setActiveChat(reset? chat: activeChat))
         // setActiveChat(reset? chat: activeChatStateRef.current)
         
         // check if has a new chat, then set that chat active
@@ -175,10 +164,10 @@ const ChatContainer = (props)=>{
             <Grid container>
                 <Grid item xs={3}>  
                     <Sidebar 
-                    user = {props.user}
+                    user = {user}
                     users={userList}
                     chats={chats}
-                    activeChat = {activeChatStateRef.current}
+                    activeChat = {activeChat}
                     setActiveChat = {handleSetActiveChat}
                     onSendPrivateMessage = {sendPrivateMessage}
                     />
@@ -186,12 +175,13 @@ const ChatContainer = (props)=>{
                 <Grid item xs>
                     {
                         activeChat !== null ? (
-                            <div className="chat-room" style={{display: 'flex', flexDirection: 'column', height: '100%', position: 'relative'}}>
-                                {/* display chat dialouge part (messages in an active chat) */}
-                                <ChatHeading name={activeChat.name}/>
-                                <Messages messages={activeChat.messages} user={user} typingUsers={activeChat.typingUsers}/>
-                                <MessageInput sendMessage={(message)=>{sendMessage(activeChat.id, message)}} sendTyping={(isTyping)=>{sendTyping(activeChat.id, isTyping)}}/>
-                            </div>
+                            // <div className="chat-room" style={{display: 'flex', flexDirection: 'column', height: '100%', position: 'relative'}}>
+                            //     {/* display chat dialouge part (messages in an active chat) */}
+                            //     <ChatHeading name={activeChat.name}/>
+                            //     <Messages messages={activeChat.messages} user={user} typingUsers={activeChat.typingUsers}/>
+                            //     <MessageInput sendMessage={(message)=>{sendMessage(activeChat.id, message)}} sendTyping={(isTyping)=>{sendTyping(activeChat.id, isTyping)}}/>
+                            // </div>
+                            <div>Abc</div>
                         ):(<div className="chat-room choose">
                             <h3>Welcome to our chat application!</h3>
                         </div>)
@@ -199,7 +189,7 @@ const ChatContainer = (props)=>{
 
                 </Grid>
                 <Grid item xs={2}>
-                    <ActiveUserList userList={userList} user={props.user} handleSendPrivateMessage={sendPrivateMessage}/>
+                    {/* <ActiveUserList userList={userList} user={props.user} handleSendPrivateMessage={sendPrivateMessage}/> */}
                 </Grid>
 
             </Grid>

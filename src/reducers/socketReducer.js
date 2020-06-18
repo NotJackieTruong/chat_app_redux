@@ -8,7 +8,7 @@ const socketReducer = (state = initState, action)=>{
   switch(action.type){
     case SET_SOCKET:
       state.socket = action.payload
-      return {socket: state.socket}
+      return {...state, socket: state.socket}
     default:
       return state
   }

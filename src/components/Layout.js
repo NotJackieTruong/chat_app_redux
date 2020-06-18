@@ -5,7 +5,7 @@ import LoginForm from './LoginForm'
 import ChatContainer from './ChatContainer'
 
 // import dispatch, selector
-import {useDispatch, useSelector} from 'react-redux'
+import {useDispatch, useSelector, useStore} from 'react-redux'
 import {setSocket} from '../actions/socketActions' // import set socket function
 import {setUser} from '../actions/userActions'
 // port 3001: server
@@ -13,10 +13,10 @@ import {setUser} from '../actions/userActions'
 const socketURL = "http://localhost:3001"
 const Layout = (props)=>{
   const dispatch = useDispatch()
-
+  const store = useStore()
   const socket = useSelector(state => state.socketReducer.socket)
   const user = useSelector(state => state.userReducer.user)
-  console.log('user: ', user)
+  console.log('state: ', store.getState())
 
   // component will mount
   useEffect(()=>{
@@ -50,7 +50,7 @@ const Layout = (props)=>{
 
   return(
     <div className="contaienr">
-      {JSON.stringify(user) === '{}' || user === undefined ? <LoginForm/>:<div>Entered to main message page</div>}
+      {JSON.stringify(user) === '{}' ? <LoginForm/>:<ChatContainer/>}
     </div>
   )
 }

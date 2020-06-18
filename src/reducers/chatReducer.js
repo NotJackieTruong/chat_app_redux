@@ -9,10 +9,10 @@ const chatReducer = (state = initState, action)=>{
   switch(action.type){
     case SET_CHAT:
       state.chats = action.payload
-      return {chats: state.chats}
+      return {...state, chats: state.chats}
     case SET_ACTIVE_CHAT:
       state.activeChat = action.payload
-      return {activeChat: state.activeChat}
+      return {...state, activeChat: state.activeChat}
     default:
       return state
   }
