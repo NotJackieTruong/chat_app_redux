@@ -200,10 +200,6 @@ const ChatList = () => {
   const activeChat = useSelector(state => state.chatReducer.activeChat)
   const user = useSelector(state => state.userReducer.user)
 
-  const handleOnclick = (chat) => {
-    dispatch(setActiveChat())
-  }
-
   return (
     <div className="active-chat" style={{ marginTop: '2vh' }}>
       {chats.map((chat) => {
@@ -246,14 +242,12 @@ const ChatList = () => {
 }
 
 const Sidebar = (props) => {
-  var handleOnclick = (chat) => {
-    props.setActiveChat(chat)
-  }
-  console.log('active chat from sidebar: ', props.activeChat)
+  const activeChat = useSelector(state => state.chatReducer.activeChat)
+  console.log('active chat from sidebar: ', activeChat)
   return (
     <div className="container" style={{ borderRight: '1px solid lightgrey', height: '100vh' }}>
       <SidebarHeader />
-      <SidebarSearch onSendPrivateMessage={props.onSendPrivateMessage} />
+      <SidebarSearch />
       <ChatList />
     </div>
   )

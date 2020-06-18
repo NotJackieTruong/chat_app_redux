@@ -35,6 +35,7 @@ const ChatContainer = (props)=>{
         socket.on('connect', ()=>{
             socket.emit(COMMUNITY_CHAT, resetChat)
         })
+
         // listen on event when user is connected
         socket.on(USER_CONNECTED, (connectedUsers)=>{
             console.log('connected user: ',connectedUsers)
@@ -66,12 +67,13 @@ const ChatContainer = (props)=>{
     var resetChat=(chat)=>{
         return addChat(chat, true)
     }
-
+    console.log('chats: ', chats)
     var addChat = (chat, reset=false)=>{
         const newChats = reset? [chat] : [...chats, chat]
-        // console.log('newChats: ', newChats, ', reset: ', reset, ', chat: ', chat, ', chats: ', chatsStateRef.current)
         dispatch(setChats(newChats))
         dispatch(setActiveChat(reset? chat: activeChat))
+        console.log('newChats: ', newChats, ', reset: ', reset, ', chat: ', chat, ', chats: ', chats)
+
         // setActiveChat(reset? chat: activeChatStateRef.current)
         
         // check if has a new chat, then set that chat active
@@ -80,7 +82,7 @@ const ChatContainer = (props)=>{
 
         // receive message event from messageEvent namespace
         socket.on(messageEvent, (message)=>{
-            var newChats2 = chats.map((newChat)=>{
+            var newChats2 = newChats.map((newChat)=>{
                 // only append messages array of an active chat
                 if(newChat.id === chat.id){
                     newChat.messages.push(message)
@@ -94,7 +96,7 @@ const ChatContainer = (props)=>{
         socket.on(typingEvent, ({isTyping, user})=>{
             // only show the "user is typing" for the client that is not the sender
 			if(user !== user.name){
-				var newChats3 = chats.map((newChat)=>{
+				var newChats3 = newChats.map((newChat)=>{
 					if(newChat.id === chat.id){
                         // typingUser = [] (initiate)
 
@@ -163,25 +165,17 @@ const ChatContainer = (props)=>{
         <div className="container" style={{height: '100%'}}>
             <Grid container>
                 <Grid item xs={3}>  
-                    <Sidebar 
-                    user = {user}
-                    users={userList}
-                    chats={chats}
-                    activeChat = {activeChat}
-                    setActiveChat = {handleSetActiveChat}
-                    onSendPrivateMessage = {sendPrivateMessage}
-                    />
+                    <Sidebar/>
                 </Grid>
                 <Grid item xs>
                     {
                         activeChat !== null ? (
-                            // <div className="chat-room" style={{display: 'flex', flexDirection: 'column', height: '100%', position: 'relative'}}>
-                            //     {/* display chat dialouge part (messages in an active chat) */}
-                            //     <ChatHeading name={activeChat.name}/>
-                            //     <Messages messages={activeChat.messages} user={user} typingUsers={activeChat.typingUsers}/>
-                            //     <MessageInput sendMessage={(message)=>{sendMessage(activeChat.id, message)}} sendTyping={(isTyping)=>{sendTyping(activeChat.id, isTyping)}}/>
-                            // </div>
-                            <div>Abc</div>
+                            <div className="chat-room" style={{display: 'flex', flexDirection: 'column', height: '100%', position: 'relative'}}>
+                                {/* display chat dialouge part (messages in an active chat) */}
+                                <ChatHeading />
+                                <Messages />
+                                <MessageInput/>
+                            </div>
                         ):(<div className="chat-room choose">
                             <h3>Welcome to our chat application!</h3>
                         </div>)

@@ -1,6 +1,7 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, { useEffect, useRef} from 'react'
 import {makeStyles} from '@material-ui/core/styles'
-import { useRadioGroup } from '@material-ui/core'
+import { useSelector } from 'react-redux'
+
 const useStyle = makeStyles(()=>({
   message: {
     backgroundColor: 'rgba(0, 0, 0, .04)',
@@ -37,32 +38,17 @@ const Message = (props)=>{
   return(
     <div id={props.id} className={`message ${classes.message}`}>
       <p>{props.message}</p>
-      {/* <p>SOmethin is in here...</p> */}
     </div>
   )
 }
 
-
-
 const Messages = (props)=>{
   const classes = useStyle()
 
-  // var scrollToBottom = ()=>{
-  //   animateScroll.scrollToBottom({
-  //     className: "thread-container"
-  //   })
-  // }
+  const activeChat = useSelector(state => state.chatReducer.activeChat)
+  const user = useSelector(state => state.userReducer.user)
 
-  // useEffect(()=>{
-  //   scrollToBottom()
-  // }, [])
-
-  // useEffect(()=>{
-  //   scrollToBottom()
-  // console.log('props messages change: ', props.messages)
-
-  // }, [props.messages.length])
-
+  // auto scroll down function
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = ()=>{
@@ -72,16 +58,16 @@ const Messages = (props)=>{
   useEffect(()=>{
     scrollToBottom()
 
-  }, [props.messages.length])
+  }, [activeChat.messages.length])
   
   return(
     <div className="thread-container">
       <div className="thread">
       {
-        props.messages.length !== 0? (
-          props.messages.map((mes)=>{
+        activeChat.messages.length !== 0? (
+          activeChat.messages.map((mes)=>{
             return(
-              <div key={mes.id} className={`message-container ${mes.sender === props.user.name && "right"}`}>
+              <div key={mes.id} className={`message-container ${mes.sender === user.name && "right"}`}>
                 <Message key={mes.id} id={mes.id} time={mes.time} message={mes.message} sender={mes.sender}/>
                 <div className={classes.time}><p>{mes.time}</p></div>
               </div>
@@ -94,7 +80,7 @@ const Messages = (props)=>{
       }
       <div ref={messagesEndRef}/>
       {
-        props.typingUsers.map((name)=>{
+        activeChat.typingUsers.map((name)=>{
           return(
             <TypingIndicator typing={`${name} is typing`}/>
           )

@@ -5,6 +5,9 @@ import InputBase from '@material-ui/core/InputBase'
 import Button from '@material-ui/core/Button'
 import Grid from '@material-ui/core/Grid'
 
+import { useSelector } from 'react-redux'
+import { MESSAGE_SENT, TYPING } from '../Events'
+
 const useStyles = makeStyles(() => ({
   messageInputContainer: {
     position: 'absolute',
@@ -23,18 +26,29 @@ const MessageInput = (props) => {
   const [message, setMessage] = useState("")
   const [isTyping, setIsTyping] = useState(false)
 
+  const socket = useSelector(state => state.socketReducer.socket)
+  const activeChat = useSelector(state => state.chatReducer.activeChat)
+
+  var sendMessage = (chatId, message) => {
+    socket.emit(MESSAGE_SENT, { chatId, message })
+  }
+
+  var sendTyping = (chatId, isTyping) => {
+    socket.emit(TYPING, { chatId, isTyping })
+  }
+
   var handleSubmit = (e) => {
     e.preventDefault()
-    props.sendMessage(message)
+    sendMessage(activeChat.id, message)
     setMessage("")
 
   }
 
-  var sendTyping = () => {
+  var typing = () => {
     lastUpdateTime = Date.now()
     if (!isTyping) {
       setIsTyping(true)
-      props.sendTyping(true)
+      sendTyping(activeChat.id, true)
       startCheckingTyping()
     }
   }
@@ -51,7 +65,7 @@ const MessageInput = (props) => {
   var stopCheckingTyping = () => {
     if (typingInterval) {
       clearInterval(typingInterval)
-      props.sendTyping(false)
+      sendTyping(activeChat.id, false)
     }
   }
 
@@ -67,7 +81,7 @@ const MessageInput = (props) => {
               disableUnderline={true}
               value={message}
               style={{ backgroundColor: 'rgba(0, 0, 0, .04)', borderRadius: '18px', width: "100%", padding: '1vh' }}
-              onKeyUp={(e) => { e.keyCode !== 13 && sendTyping() }}
+              onKeyUp={(e) => { e.keyCode !== 13 && typing() }}
               onChange={(e) => { setMessage(e.target.value) }}
             />
           </Grid>
