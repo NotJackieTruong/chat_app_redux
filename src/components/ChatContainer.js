@@ -14,13 +14,10 @@ import {setChats, setActiveChat} from '../actions/chatActions'
 
 const ChatContainer = (props)=>{
     const socket = useSelector(state => state.socketReducer.socket)
-
     const user = useSelector(state => state.userReducer.user)
-    const userList = useSelector(state => state.userReducer.userList)
-
     const chats = useSelector(state => state.chatReducer.chats)
     const activeChat = useSelector(state => state.chatReducer.activeChat)
-
+    const store = useStore()
     const dispatch = useDispatch()
     
     // componentDidMount()
@@ -38,26 +35,29 @@ const ChatContainer = (props)=>{
 
         // listen on event when user is connected
         socket.on(USER_CONNECTED, (connectedUsers)=>{
-            console.log('connected user: ',connectedUsers)
-            Object.keys(connectedUsers).map(function(key){
-                const newUserList = [...userList, connectedUsers[key]]
+            console.log('connected user: ',connectedUsers, ', user list state: ', store.getState().userReducer.userList)
+            dispatch(setUserList([]))
+            for (let key in connectedUsers){
+                const newUserList = [...store.getState().userReducer.userList, connectedUsers[key]]
                 dispatch(setUserList(newUserList))
-            })
-        })
+            }
+            // Object.keys(connectedUsers).map(function(key){
+                
 
+            // })
+        })
         // listen on event when user is disconnected
         socket.on(USER_DISCONNECTED, (connectedUsers)=>{
             // const removedUsers = userListStateRef.current.filter(otherUser => !connectedUsers.some(connectedUser=>connectedUser.id === otherUser.id))
             // console.log('remove user: ', removedUsers)
             // removeUsersFromChat(removedUsers)
+            dispatch(setUserList([]))
             Object.keys(connectedUsers).map(function(key){
-                const newUserList = [...userList, connectedUsers[key]]
+                const newUserList = [...store.getState().userReducer.userList, connectedUsers[key]]
                 dispatch(setUserList(newUserList))
             })
         })
         socket.on(NEW_CHAT_USER, addUserToChat)
-
-        // 
     }
 
     // Adds chat to the chat container, if reset is true removes all chats
@@ -67,14 +67,12 @@ const ChatContainer = (props)=>{
     var resetChat=(chat)=>{
         return addChat(chat, true)
     }
-    console.log('chats: ', chats)
+
     var addChat = (chat, reset=false)=>{
-        const newChats = reset? [chat] : [...chats, chat]
+        const newChats = reset? [chat] : [...store.getState().chatReducer.chats, chat]
         dispatch(setChats(newChats))
         dispatch(setActiveChat(reset? chat: activeChat))
-        console.log('newChats: ', newChats, ', reset: ', reset, ', chat: ', chat, ', chats: ', chats)
-
-        // setActiveChat(reset? chat: activeChatStateRef.current)
+        // console.log('newChats: ', newChats, ', reset: ', reset, ', chat: ', chat, ', chats: ', chats)
         
         // check if has a new chat, then set that chat active
         const messageEvent = `${MESSAGE_RECEIVED}-${chat.id}`
@@ -93,9 +91,9 @@ const ChatContainer = (props)=>{
         })
 
         // receive typing event from typingEvent namespace
-        socket.on(typingEvent, ({isTyping, user})=>{
+        socket.on(typingEvent, ({sender, isTyping})=>{
             // only show the "user is typing" for the client that is not the sender
-			if(user !== user.name){
+			if(sender !== user.name){
 				var newChats3 = newChats.map((newChat)=>{
 					if(newChat.id === chat.id){
                         // typingUser = [] (initiate)
@@ -106,10 +104,10 @@ const ChatContainer = (props)=>{
 
                         // Scenerio 2: user is not typing
                         // Remove objects that is current user and reassigns the active chat's typingUser array
-						if(isTyping && !newChat.typingUsers.includes(user)){
-							newChat.typingUsers.push(user)
-						}else if(!isTyping && newChat.typingUsers.includes(user)){
-							newChat.typingUsers = newChat.typingUsers.filter(u => u !== user)
+						if(isTyping && !newChat.typingUsers.includes(sender)){
+							newChat.typingUsers.push(sender)
+						}else if(!isTyping && newChat.typingUsers.includes(sender)){
+							newChat.typingUsers = newChat.typingUsers.filter(u => u !== sender)
 						}
 					}
 					return newChat
@@ -120,29 +118,8 @@ const ChatContainer = (props)=>{
 
     }
 
-    var sendMessage = (chatId, message)=>{
-        const socket = props.socket
-        socket.emit(MESSAGE_SENT, {chatId, message})
-    }
-
-    var sendTyping = (chatId, isTyping)=>{
-        const socket = props.socket
-        socket.emit(TYPING, {chatId, isTyping})
-    }
-
-    var handleSetActiveChat = (activeChat)=>{
-        setActiveChat(activeChat)
-    }
-
-    var sendPrivateMessage = (receiver)=>{
-        const socket = props.socket
-        console.log('active chat: ', activeChat)
-        socket.emit(PRIVATE_MESSAGE, {sender: props.user.name, receiver, activeChat})
-
-    }
-
     var addUserToChat = ({chatId, newUser})=>{
-        const newChats = chats.map(chat=>{
+        const newChats = store.getState().chatReducer.chats.map(chat=>{
             if(chat.id === chatId){
                 return Object.assign({}, chat, {users: [...chat.users, newUser]})
             }
@@ -159,7 +136,7 @@ const ChatContainer = (props)=>{
         })
         dispatch(setChats(newChats))
     }
-    // console.log('current state of chats: ', chats)
+
     // render component
     return(
         <div className="container" style={{height: '100%'}}>
@@ -183,7 +160,7 @@ const ChatContainer = (props)=>{
 
                 </Grid>
                 <Grid item xs={2}>
-                    {/* <ActiveUserList userList={userList} user={props.user} handleSendPrivateMessage={sendPrivateMessage}/> */}
+                    <ActiveUserList/>
                 </Grid>
 
             </Grid>

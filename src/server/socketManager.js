@@ -128,9 +128,9 @@ function sendMessageToChat(sender){
 }
 
 // function to send a typing event
-function sendTypingToChat(user){
+function sendTypingToChat(sender){
   return (chatId, isTyping)=>{
-    io.emit(`${TYPING}-${chatId}`, {user, isTyping})
+    io.emit(`${TYPING}-${chatId}`, {sender, isTyping})
   }
 }
 
