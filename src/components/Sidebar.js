@@ -242,6 +242,8 @@ const ChatList = () => {
 
 const Sidebar = () => {
   const activeChat = useSelector(state => state.chatReducer.activeChat)
+  console.log('active chat: ', activeChat)
+
   return (
     <div className="container" style={{ borderRight: '1px solid lightgrey', height: '100vh' }}>
       <SidebarHeader />

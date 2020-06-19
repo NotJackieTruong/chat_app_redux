@@ -51,7 +51,7 @@ const AddIconModal = () => {
   const handleClose = () => {
     setOpen(false)
   }
-  console.log('active chat: ', activeChat)
+  
   return (
     <div>
       <IconButton size="medium" className={classes.buttons} onClick={handleClick}>

@@ -43,13 +43,15 @@ const ActiveUser = (props) => {
 
 const ActiveUserList = () => {
   const classes = useStyles();
+
   const userList = useSelector(state => state.userReducer.userList)
   const user = useSelector(state => state.userReducer.user)
   const socket = useSelector(state => state.socketReducer.socket)
   const activeChat = useSelector(state => state.chatReducer.activeChat)
+  const chats = useSelector(state => state.chatReducer.chats)
 
   var sendPrivateMessage = (receiver) => {
-    socket.emit(PRIVATE_CHAT, { sender: user.name, receiver, activeChat })
+    socket.emit(PRIVATE_CHAT, { sender: user.name, receiver, chats })
 
   }
 

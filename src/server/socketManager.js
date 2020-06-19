@@ -1,5 +1,5 @@
 const io = require('./index').io
-const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, MESSAGE_RECEIVED, MESSAGE_SENT, USER_DISCONNECTED, TYPING, PRIVATE_CHAT, NEW_CHAT_USER} = require("../Events") // import namespaces
+const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, MESSAGE_RECEIVED, MESSAGE_SENT, USER_DISCONNECTED, TYPING, PRIVATE_CHAT, NEW_CHAT_USER } = require("../Events") // import namespaces
 const { createMessage, createChat, createUser } = require('../Factories')
 
 let connectedUsers = {} // list of connected users
@@ -25,13 +25,13 @@ module.exports = function (socket) {
     if (isUser(connectedUsers, nickname)) {
       callback({ isUser: true, user: null })
     } else {
-      callback({ isUser: false, user: createUser({ name: nickname, socketId: socket.id}) })
+      callback({ isUser: false, user: createUser({ name: nickname, socketId: socket.id }) })
     }
 
   })
 
   // handle when user is connected
-  socket.on(USER_CONNECTED, (user)=>{
+  socket.on(USER_CONNECTED, (user) => {
     user.socketId = socket.id
     connectedUsers = addUser(connectedUsers, user)
     socket.user = user
@@ -44,9 +44,9 @@ module.exports = function (socket) {
   })
 
   // receive user disconnected event
-  socket.on('disconnected', ()=>{
+  socket.on('disconnected', () => {
     // check if the object 'socket' has property 'user'
-    if('user' in socket){
+    if ('user' in socket) {
       connectedUsers = removeUser(connectedUsers, socket.user.name)
       io.emit(USER_DISCONNECTED, connectedUsers)
       console.log('user connected list after disconnecting: ', connectedUsers)
@@ -54,7 +54,7 @@ module.exports = function (socket) {
   })
 
   // receive user logout event
-  socket.on(LOGOUT, ()=>{
+  socket.on(LOGOUT, () => {
     connectedUsers = removeUser(connectedUsers, socket.user.name)
     io.emit(USER_DISCONNECTED, connectedUsers)
     console.log('user connected list after loggin out: ', connectedUsers)
@@ -62,44 +62,69 @@ module.exports = function (socket) {
 
   // receive community_chat (default chat) event
   socket.on(COMMUNITY_CHAT, (callback)=>{
-		callback(communityChat)
-	})
+  	callback(communityChat)
+  })
+
+ 
+
+  socket.on('connect', () => {
+    const communityChat = createChat({ isCommunity: true })
+    socket.emit(COMMUNITY_CHAT, communityChat)
+  })
 
   // receive message event
-	socket.on(MESSAGE_SENT, ({chatId, message})=>{
+  socket.on(MESSAGE_SENT, ({ chatId, message }) => {
     sendMessageToChatFromUser(chatId, message)
-	})
- 
+  })
+
   // receive typing event
-	socket.on(TYPING, ({chatId, isTyping})=>{
-		sendTypingFromUser(chatId, isTyping)
-	})
+  socket.on(TYPING, ({ chatId, isTyping }) => {
+    sendTypingFromUser(chatId, isTyping)
+  })
 
-  // receive private message event || create new private chat
-  socket.on(PRIVATE_CHAT, ({sender, receiver, activeChat})=>{
-    console.log('sender: ', sender, ', receiver: ', receiver)
-    if(receiver in connectedUsers){ // make sure that the receiver is only
+  // receive private chat event
+  socket.on(PRIVATE_CHAT, ({ sender, receiver, chats }) => {
+    console.log('sender: ', sender, ', receiver: ', receiver, ', active chat: ', chats)
+    if (receiver in connectedUsers) { // make sure that the receiver is online
       const receiverSocket = connectedUsers[receiver].socketId // connectedUsers.receiver.socketId
-
-      if(activeChat === null || JSON.stringify(activeChat.id) === JSON.stringify(communityChat.id)){
-        const newChat = createChat({name: `${sender},${receiver}`, users:[receiver, sender]})
+      var isCreated = null
+      if (chats) {
+        chats.some((chat)=>{
+          if(JSON.stringify(chat.users.sort()) === JSON.stringify([sender, receiver].sort())){
+            return isCreated = true
+          } else {
+            isCreated = false
+          }
+        })
+        console.log('is created: ', isCreated)
+        if (isCreated == false) {
+          const newChat = createChat({ name: `${sender},${receiver}`, users: [receiver, sender] })
+          // only sending message to sender client if they are in 'sender' room (chanel)
+          socket.to(receiverSocket).emit(PRIVATE_CHAT, newChat)
+          socket.emit(PRIVATE_CHAT, newChat)
+        }
+      } else {
+        const newChat = createChat({ name: `${sender},${receiver}`, users: [receiver, sender] })
         // only sending message to sender client if they are in 'sender' room (chanel)
         socket.to(receiverSocket).emit(PRIVATE_CHAT, newChat)
         socket.emit(PRIVATE_CHAT, newChat)
-        
-      }else{// active chat !== null || activeChat.id !== communityChat.id (means not community chat/ no active chat at the moment)
-        if(!(receiver in activeChat.users)){
-          activeChat.users.filter( user => user in connectedUsers)
-                          .map(user=>connectedUsers[user])
-                          .map(user=>{socket.to(user.socketId).emit(NEW_CHAT_USER, {chatId: activeChat.id, newUser: receiver})})
-          socket.emit(NEW_CHAT_USER, {chatId: activeChat.id, newUser: receiver})
-        }
-        socket.to(receiverSocket).emit(PRIVATE_CHAT, activeChat)
       }
-      
-    }
 
+    }
   })
+
+}
+
+var checkIsCreate = (arr1, arr2)=>{
+  var isCreated = null
+  arr2.map((arr)=>{
+    if(JSON.stringify(arr1.sort()) === JSON.stringify(arr.user.sort())){
+      return isCreated = true
+    } else {
+      isCreated = false
+    }
+  })
+  return isCreated
 }
 
 // function to add user
@@ -122,20 +147,20 @@ function isUser(userList, username) {
 }
 
 // function to send a message event
-function sendMessageToChat(sender){
-  return (chatId, message)=>{
+function sendMessageToChat(sender) {
+  return (chatId, message) => {
     console.log('Message to chat: ', message)
-    io.emit(`${MESSAGE_RECEIVED}-${chatId}`, createMessage({message, sender}))
+    io.emit(`${MESSAGE_RECEIVED}-${chatId}`, createMessage({ message, sender }))
   }
 }
 
 // function to send a typing event
-function sendTypingToChat(sender){
-  return (chatId, isTyping)=>{
-    io.emit(`${TYPING}-${chatId}`, {sender, isTyping})
+function sendTypingToChat(sender) {
+  return (chatId, isTyping) => {
+    io.emit(`${TYPING}-${chatId}`, { sender, isTyping })
   }
 }
 
-function sendPrivateMessageToChat(sender, receiver){
-  
+function sendPrivateMessageToChat(sender, receiver) {
+
 }
