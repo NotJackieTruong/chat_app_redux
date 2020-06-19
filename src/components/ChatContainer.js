@@ -1,8 +1,8 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, { useEffect } from 'react'
 // import custom components
 import Sidebar from './Sidebar'
 import ActiveUserList from './ActiveUserList'
-import {COMMUNITY_CHAT, MESSAGE_RECEIVED, MESSAGE_SENT, TYPING, PRIVATE_MESSAGE, USER_CONNECTED, USER_DISCONNECTED, NEW_CHAT_USER} from '../Events'
+import {COMMUNITY_CHAT, MESSAGE_RECEIVED, TYPING, PRIVATE_CHAT, USER_CONNECTED, USER_DISCONNECTED, NEW_CHAT_USER} from '../Events'
 import ChatHeading from './ChatHeading'
 import Messages from './Messages'
 import MessageInput from './MessageInput'
@@ -28,14 +28,13 @@ const ChatContainer = (props)=>{
     var initSocket = (socket)=>{
         socket.emit(COMMUNITY_CHAT, resetChat)
         // listen on private message namespace
-        socket.on(PRIVATE_MESSAGE, addChat)
+        socket.on(PRIVATE_CHAT, addChat)
         socket.on('connect', ()=>{
             socket.emit(COMMUNITY_CHAT, resetChat)
         })
 
         // listen on event when user is connected
         socket.on(USER_CONNECTED, (connectedUsers)=>{
-            console.log('connected user: ',connectedUsers, ', user list state: ', store.getState().userReducer.userList)
             dispatch(setUserList([]))
             for (let key in connectedUsers){
                 const newUserList = [...store.getState().userReducer.userList, connectedUsers[key]]
@@ -71,10 +70,10 @@ const ChatContainer = (props)=>{
     var addChat = (chat, reset=false)=>{
         const newChats = reset? [chat] : [...store.getState().chatReducer.chats, chat]
         dispatch(setChats(newChats))
+        reset? (dispatch(setActiveChat(chat))): (dispatch(setActiveChat(activeChat)))
         dispatch(setActiveChat(reset? chat: activeChat))
         // console.log('newChats: ', newChats, ', reset: ', reset, ', chat: ', chat, ', chats: ', chats)
         
-        // check if has a new chat, then set that chat active
         const messageEvent = `${MESSAGE_RECEIVED}-${chat.id}`
         const typingEvent = `${TYPING}-${chat.id}`
 
@@ -146,7 +145,7 @@ const ChatContainer = (props)=>{
                 </Grid>
                 <Grid item xs>
                     {
-                        activeChat !== null ? (
+                        store.getState().chatReducer.activeChat !== null ? (
                             <div className="chat-room" style={{display: 'flex', flexDirection: 'column', height: '100%', position: 'relative'}}>
                                 {/* display chat dialouge part (messages in an active chat) */}
                                 <ChatHeading />

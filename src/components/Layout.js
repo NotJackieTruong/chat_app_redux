@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react'
 import io from 'socket.io-client'
-import {USER_CONNECTED, LOGOUT, VERIFY_USER} from '../Events'
+import { LOGOUT, VERIFY_USER} from '../Events'
 import LoginForm from './LoginForm'
 import ChatContainer from './ChatContainer'
 
@@ -16,7 +16,7 @@ const Layout = (props)=>{
   const store = useStore()
   const socket = useSelector(state => state.socketReducer.socket)
   const user = useSelector(state => state.userReducer.user)
-  console.log('state: ', store.getState())
+  // console.log('state: ', store.getState())
 
   // component will mount
   useEffect(()=>{

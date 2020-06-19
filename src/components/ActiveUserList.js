@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { makeStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/Inbox';
 import ListSubheader from '@material-ui/core/ListSubheader'
 import IconButton from '@material-ui/core/IconButton'
 
-import { useSelector, useStore } from 'react-redux'
-import { PRIVATE_MESSAGE } from '../Events'
+import { useSelector } from 'react-redux'
+import { PRIVATE_CHAT } from '../Events'
 
 
 const useStyles = makeStyles((theme) => ({
@@ -41,16 +40,16 @@ const ActiveUser = (props) => {
     </ListItem>
   )
 }
+
 const ActiveUserList = () => {
   const classes = useStyles();
   const userList = useSelector(state => state.userReducer.userList)
   const user = useSelector(state => state.userReducer.user)
   const socket = useSelector(state => state.socketReducer.socket)
   const activeChat = useSelector(state => state.chatReducer.activeChat)
-  const store = useStore()
 
   var sendPrivateMessage = (receiver) => {
-    socket.emit(PRIVATE_MESSAGE, { sender: user.name, receiver, activeChat })
+    socket.emit(PRIVATE_CHAT, { sender: user.name, receiver, activeChat })
 
   }
 

@@ -1,5 +1,5 @@
 const io = require('./index').io
-const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, MESSAGE_RECEIVED, MESSAGE_SENT, USER_DISCONNECTED, TYPING, PRIVATE_MESSAGE, NEW_CHAT_USER} = require("../Events") // import namespaces
+const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, MESSAGE_RECEIVED, MESSAGE_SENT, USER_DISCONNECTED, TYPING, PRIVATE_CHAT, NEW_CHAT_USER} = require("../Events") // import namespaces
 const { createMessage, createChat, createUser } = require('../Factories')
 
 let connectedUsers = {} // list of connected users
@@ -75,16 +75,18 @@ module.exports = function (socket) {
 		sendTypingFromUser(chatId, isTyping)
 	})
 
-  // receive private message event
-  socket.on(PRIVATE_MESSAGE, ({sender, receiver, activeChat})=>{
+  // receive private message event || create new private chat
+  socket.on(PRIVATE_CHAT, ({sender, receiver, activeChat})=>{
     console.log('sender: ', sender, ', receiver: ', receiver)
-    if(receiver in connectedUsers){
+    if(receiver in connectedUsers){ // make sure that the receiver is only
       const receiverSocket = connectedUsers[receiver].socketId // connectedUsers.receiver.socketId
+
       if(activeChat === null || JSON.stringify(activeChat.id) === JSON.stringify(communityChat.id)){
         const newChat = createChat({name: `${sender},${receiver}`, users:[receiver, sender]})
         // only sending message to sender client if they are in 'sender' room (chanel)
-        socket.to(receiverSocket).emit(PRIVATE_MESSAGE, newChat)
-        socket.emit(PRIVATE_MESSAGE, newChat)
+        socket.to(receiverSocket).emit(PRIVATE_CHAT, newChat)
+        socket.emit(PRIVATE_CHAT, newChat)
+        
       }else{// active chat !== null || activeChat.id !== communityChat.id (means not community chat/ no active chat at the moment)
         if(!(receiver in activeChat.users)){
           activeChat.users.filter( user => user in connectedUsers)
@@ -92,7 +94,7 @@ module.exports = function (socket) {
                           .map(user=>{socket.to(user.socketId).emit(NEW_CHAT_USER, {chatId: activeChat.id, newUser: receiver})})
           socket.emit(NEW_CHAT_USER, {chatId: activeChat.id, newUser: receiver})
         }
-        socket.to(receiverSocket).emit(PRIVATE_MESSAGE, activeChat)
+        socket.to(receiverSocket).emit(PRIVATE_CHAT, activeChat)
       }
       
     }

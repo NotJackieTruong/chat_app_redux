@@ -15,12 +15,12 @@ import Fade from '@material-ui/core/Fade'
 import Tooltip from '@material-ui/core/Tooltip'
 
 // import socket events
-import { PRIVATE_MESSAGE } from '../Events'
-import { createChatNameFromUser, createChat } from '../Factories'
+import { PRIVATE_CHAT } from '../Events'
+import { createChatNameFromUser } from '../Factories'
 
 import { useDispatch, useSelector } from 'react-redux'
 import { logout, setReceiver } from '../actions/userActions'
-import { setChats, setActiveChat } from '../actions/chatActions'
+import { setActiveChat } from '../actions/chatActions'
 
 
 
@@ -166,7 +166,7 @@ const SidebarSearch = (props) => {
 
   var handleSubmit = (e) => {
     e.preventDefault()
-    socket.emit(PRIVATE_MESSAGE, { sender: user.name, receiver, activeChat })
+    socket.emit(PRIVATE_CHAT, { sender: user.name, receiver, activeChat })
     dispatch(setReceiver(""))
   }
   return (
@@ -197,7 +197,6 @@ const ChatList = () => {
   const classes = useStyles()
   const dispatch = useDispatch()
   const chats = useSelector(state => state.chatReducer.chats)
-  const activeChat = useSelector(state => state.chatReducer.activeChat)
   const user = useSelector(state => state.userReducer.user)
 
   return (
@@ -208,7 +207,7 @@ const ChatList = () => {
           // const chatSideName = chat.users.find((name) => {
           //     return name !== props.user.name
           // }) || "Community"
-          const classNames = (activeChat && activeChat.id === chat.id) ? 'active' : ''
+          // const classNames = (activeChat && activeChat.id === chat.id) ? 'active' : ''
           const name = chat.isCommunity ? chat.name : createChatNameFromUser(chat.users, user)
           return (
             <div
@@ -218,7 +217,7 @@ const ChatList = () => {
               onClick={() => { dispatch(setActiveChat(chat)) }}>
               <Grid container>
                 <Grid item xs sm={2}>
-                  <IconButton size="medium">
+                  <IconButton size="medium" >
                     {name[0].toUpperCase()}
                   </IconButton>
                 </Grid>
@@ -241,9 +240,8 @@ const ChatList = () => {
   )
 }
 
-const Sidebar = (props) => {
+const Sidebar = () => {
   const activeChat = useSelector(state => state.chatReducer.activeChat)
-  console.log('active chat from sidebar: ', activeChat)
   return (
     <div className="container" style={{ borderRight: '1px solid lightgrey', height: '100vh' }}>
       <SidebarHeader />

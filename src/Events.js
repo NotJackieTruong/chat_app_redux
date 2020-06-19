@@ -8,6 +8,6 @@ module.exports = {
   TYPING: "TYPING",
   VERIFY_USER: "VERIFY_USER",
   LOGOUT: "LOGOUT",
-  PRIVATE_MESSAGE: "PRIVATE_MESSAGE",
+  PRIVATE_CHAT: "PRIVATE_CHAT", // creating new chat event
   NEW_CHAT_USER: "NEW_CHAT_USER"
 }
