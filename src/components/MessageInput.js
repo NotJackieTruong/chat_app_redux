@@ -54,7 +54,7 @@ const MessageInput = (props) => {
 
   var startCheckingTyping = () => {
     typingInterval = setInterval(() => {
-      if ((Date.now() - lastUpdateTime) > 3000) {
+      if ((Date.now() - lastUpdateTime) > 500) {
         setIsTyping(false)
         stopCheckingTyping()
       }

@@ -13,7 +13,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 
 import { useSelector } from 'react-redux'
-import {PRIVATE_CHAT} from '../Events'
+import { PRIVATE_CHAT, ADD_USER_TO_CHAT } from '../Events'
 
 const useStyles = makeStyles((theme) => ({
   buttons: {
@@ -41,7 +41,7 @@ const AddIconModal = () => {
   const [open, setOpen] = React.useState(false)
 
   const sendPrivateMessage = (receiver) => {
-    socket.emit(PRIVATE_CHAT, { sender: user.name, receiver, activeChat })
+    socket.emit(ADD_USER_TO_CHAT, { receiver, activeChat })
   }
 
   const handleClick = () => {
@@ -51,7 +51,7 @@ const AddIconModal = () => {
   const handleClose = () => {
     setOpen(false)
   }
-  
+
   return (
     <div>
       <IconButton size="medium" className={classes.buttons} onClick={handleClick}>
@@ -73,8 +73,8 @@ const AddIconModal = () => {
         <Fade in={open}>
           <div className={classes.paper}>
             <List component="nav" aria-label="main mailbox folders" className={classes.list}>
-              {userList.filter(otherUser => otherUser.name !== user.name).length !== 0 ?
-                (userList.filter(otherUser => otherUser.name !== user.name).map((activeUser) => {
+              {userList.filter(onlineUser => !activeChat.users.includes(onlineUser.name)).length !== 0 ?
+                (userList.filter(onlineUser => !activeChat.users.includes(onlineUser.name)).map((activeUser) => {
                   return (
                     <ListItem key={activeUser.id} button onClick={() => {
                       console.log('receiver: ', activeUser);
@@ -110,7 +110,7 @@ const ChatHeading = () => {
         <Grid container style={{ height: 'fit-content' }}>
           <Grid item xs><h2 style={{ margin: 0, padding: 0 }}>{activeChat.name}</h2></Grid>
           <Grid item xs={2}>
-            {activeChat.name !== "Community"? (<AddIconModal />):(<div></div>)}
+            {activeChat.name !== "Community" ? (<AddIconModal />) : (<div></div>)}
           </Grid>
         </Grid>
 

@@ -1,9 +1,9 @@
 const io = require('./index').io
-const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, MESSAGE_RECEIVED, MESSAGE_SENT, USER_DISCONNECTED, TYPING, PRIVATE_CHAT, NEW_CHAT_USER } = require("../Events") // import namespaces
+const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, MESSAGE_RECEIVED, MESSAGE_SENT, USER_DISCONNECTED, TYPING, PRIVATE_CHAT, NEW_CHAT_USER, ADD_USER_TO_CHAT } = require("../Events") // import namespaces
 const { createMessage, createChat, createUser } = require('../Factories')
 
 let connectedUsers = {} // list of connected users
-let communityChat = createChat({isCommunity:true})
+let communityChat = createChat({ isCommunity: true })
 
 // socket.emit('something', 'another something') is used to send to sender-client only
 // io.emit('something', 'another something') is used to send to all connected clients
@@ -61,15 +61,8 @@ module.exports = function (socket) {
   })
 
   // receive community_chat (default chat) event
-  socket.on(COMMUNITY_CHAT, (callback)=>{
-  	callback(communityChat)
-  })
-
- 
-
-  socket.on('connect', () => {
-    const communityChat = createChat({ isCommunity: true })
-    socket.emit(COMMUNITY_CHAT, communityChat)
+  socket.on(COMMUNITY_CHAT, (callback) => {
+    callback(communityChat)
   })
 
   // receive message event
@@ -88,8 +81,8 @@ module.exports = function (socket) {
       const receiverSocket = connectedUsers[receiver].socketId // connectedUsers.receiver.socketId
       var isCreated = null
       if (chats) {
-        chats.some((chat)=>{
-          if(JSON.stringify(chat.users.sort()) === JSON.stringify([sender, receiver].sort())){
+        chats.some((chat) => {
+          if (JSON.stringify(chat.users.sort()) === JSON.stringify([sender, receiver].sort())) {
             return isCreated = true
           } else {
             isCreated = false
@@ -109,6 +102,18 @@ module.exports = function (socket) {
       }
 
     }
+  })
+
+  socket.on(ADD_USER_TO_CHAT, ({receiver, activeChat})=>{
+    const receiverSocket = receiver.socketId
+    activeChat.users.filter(user => user in connectedUsers) // take all users that are in activeChat.users array out of connectedUsers object
+                    .map(user => connectedUsers[user]) // get user object in connectedUsers
+                    .map(user => {
+                      socket.to(user.socketId).emit(NEW_CHAT_USER, {chatId: activeChat.id, newUser: receiver})
+                    })
+    socket.emit(NEW_CHAT_USER, {chatId: activeChat.id, newUser: receiver})
+    socket.to(receiverSocket).emit(PRIVATE_CHAT, activeChat)
+
   })
 
 }

@@ -123,7 +123,7 @@ const ChatContainer = (props) => {
   var addUserToChat = ({ chatId, newUser }) => {
     const newChats = store.getState().chatReducer.chats.map(chat => {
       if (chat.id === chatId) {
-        return Object.assign({}, chat, { users: [...chat.users, newUser] })
+        return Object.assign({}, chat, { users: [...chat.users, newUser.name] })
       }
       return chat
     })
