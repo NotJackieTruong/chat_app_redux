@@ -59,7 +59,6 @@ const ActiveUserList = () => {
     sendPrivateMessage(receiver)
   }
 
-  console.log('user list: ', userList)
   return (
     <div className={classes.root}>
       <ListSubheader disableGutters={true} style={{ borderBottom: '1px solid lightgrey', backgroundColor: 'white', width: '100%' }}>Active users</ListSubheader>

@@ -141,7 +141,6 @@ function isUser(userList, username) {
 // function to send a message event
 function sendMessageToChat(sender) {
   return (chatId, message) => {
-    console.log('Message to chat: ', message)
     io.emit(`${MESSAGE_RECEIVED}-${chatId}`, createMessage({ message, sender }))
   }
 }

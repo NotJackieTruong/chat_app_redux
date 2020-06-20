@@ -89,10 +89,7 @@ const AddIconModal = () => {
                   )
                 })) : (<div>No active user</div>)
               }
-
             </List>
-
-
           </div>
         </Fade>
       </Modal>

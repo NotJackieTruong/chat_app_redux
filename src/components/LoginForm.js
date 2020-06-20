@@ -4,18 +4,35 @@ import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import Button from '@material-ui/core/Button'
-import Input from '@material-ui/core/Input'
+import TextField from '@material-ui/core/TextField'
 
 // import dispatch, selector
 import { useDispatch, useSelector } from 'react-redux'
-import { setNickname, setUser } from '../actions/userActions'
+import { setNickname, setUser, setReceiver } from '../actions/userActions'
 
 import { VERIFY_USER, USER_CONNECTED } from '../Events'
 
 const useStyles = makeStyles((theme) => ({
-  margin: {
-    margin: theme.spacing(),
+  formContainer: {
+    width: '20vw',
+    height: '40vh',
+    margin: '20vh auto',
+    border: '1px solid lightgrey',
   },
+  formTitle: {
+    margin: '5vh auto',
+    fontWeight: 'bolder',
+    fontSize: 'x-large',
+    width: 'fit-content',
+  },
+  form: {
+    padding: '0 2vw'
+  },
+  error: {
+    color: '#fa3e3e',
+    fontSize: 'large',
+    margin: '2vh 0'
+  }
 }));
 
 var LoginForm = () => {
@@ -33,31 +50,36 @@ var LoginForm = () => {
     // console.log('state: ', store.getState().userReducer)
     e.preventDefault()
     // send verify user event to the server
-    socket.emit(VERIFY_USER, nickname, ({ isUser, user }) => {
-      if (isUser) {
-        setError('User name taken!')
-      } else {
-        setError('')
-        socket.emit(USER_CONNECTED, user)
-        dispatch(setUser(user))
-      }
-    })
+    if (nickname) {
+      socket.emit(VERIFY_USER, nickname, ({ isUser, user }) => {
+        if (isUser) {
+          setError('User name taken!')
+        } else {
+          setError('')
+          socket.emit(USER_CONNECTED, user)
+          dispatch(setUser(user))
+        }
+      })
+    } else {
+      setError('You need to enter your nickname')
+    }
+
   }
 
   return (
-    <div className={classes.margin}>
-      <form type="text" onSubmit={(e) => { handleSubmit(e) }} autoComplete="off">
-        <Grid container spacing={1} alignItems="flex-end">
-          <Grid item>
-            <AccountCircle />
-          </Grid>
-          <Grid item>
-            <Input value={nickname} onChange={(e) => dispatch(setNickname(e.target.value))} fullWidth={true} placeholder="Your nickname..." />
-            <div className="error">{error ? error : null}</div>
-            <Button type="submit">Enter</Button>
+    <div className={classes.formContainer}>
+      <div className={classes.formTitle}>Login</div>
+      <form type="text" onSubmit={(e) => { handleSubmit(e) }} autoComplete="off" className={classes.form}>
+        <TextField
+          label="Nickname"
+          value={nickname}
+          onChange={(e) => { dispatch(setNickname(e.target.value)) }}
+          fullWidth={true}
+          variant="outlined"
+        />
+        <div className={classes.error} >{error ? error : null}</div>
+        <Button type="submit" fullWidth={true} color="primary" variant="contained">Enter</Button>
 
-          </Grid>
-        </Grid>
 
       </form>
 
