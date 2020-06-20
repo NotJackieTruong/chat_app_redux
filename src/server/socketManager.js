@@ -84,7 +84,6 @@ module.exports = function (socket) {
 
   // receive private chat event
   socket.on(PRIVATE_CHAT, ({ sender, receiver, chats }) => {
-    console.log('sender: ', sender, ', receiver: ', receiver, ', active chat: ', chats)
     if (receiver in connectedUsers) { // make sure that the receiver is online
       const receiverSocket = connectedUsers[receiver].socketId // connectedUsers.receiver.socketId
       var isCreated = null
@@ -96,7 +95,6 @@ module.exports = function (socket) {
             isCreated = false
           }
         })
-        console.log('is created: ', isCreated)
         if (isCreated == false) {
           const newChat = createChat({ name: `${sender},${receiver}`, users: [receiver, sender] })
           // only sending message to sender client if they are in 'sender' room (chanel)
@@ -115,17 +113,6 @@ module.exports = function (socket) {
 
 }
 
-var checkIsCreate = (arr1, arr2)=>{
-  var isCreated = null
-  arr2.map((arr)=>{
-    if(JSON.stringify(arr1.sort()) === JSON.stringify(arr.user.sort())){
-      return isCreated = true
-    } else {
-      isCreated = false
-    }
-  })
-  return isCreated
-}
 
 // function to add user
 function addUser(userList, user) {

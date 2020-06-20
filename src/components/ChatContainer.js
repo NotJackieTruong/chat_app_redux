@@ -73,23 +73,32 @@ const ChatContainer = (props) => {
     const typingEvent = `${TYPING}-${chat.id}`
 
     // receive message event from messageEvent namespace
-    socket.on(messageEvent, (message) => {
-      var newChats2 = newChats.map((newChat) => {
-        // only append messages array of an active chat
-        if (newChat.id === chat.id) {
-          newChat.messages.push(message)
-        }
-        return newChat
-      })
-      dispatch(setChats(newChats2))
-    })
+    socket.on(messageEvent, receiveMessage(chat.id))
 
     // receive typing event from typingEvent namespace
-    socket.on(typingEvent, ({ sender, isTyping }) => {
+    socket.on(typingEvent, receiveTyping(chat.id))
+    
+  }
+
+  var receiveMessage = (chatId)=>{
+    return (message) => {
+      var newChats = store.getState().chatReducer.chats.map((chat) => {
+        // only append messages array of an active chat
+        if (chat.id === chatId) {
+          chat.messages.push(message)
+        }
+        return chat
+      })
+      dispatch(setChats(newChats))
+    }
+  }
+
+  var receiveTyping = (chatId)=>{
+    return({sender, isTyping})=>{
       // only show the "user is typing" for the client that is not the sender
       if (sender !== user.name) {
-        var newChats3 = newChats.map((newChat) => {
-          if (newChat.id === chat.id) {
+        var newChats = store.getState().chatReducer.chats.map((chat) => {
+          if (chat.id === chatId) {
             // typingUser = [] (initiate)
 
             // Scenario 1: user is typing
@@ -98,18 +107,17 @@ const ChatContainer = (props) => {
 
             // Scenerio 2: user is not typing
             // Remove objects that is current user and reassigns the active chat's typingUser array
-            if (isTyping && !newChat.typingUsers.includes(sender)) {
-              newChat.typingUsers.push(sender)
-            } else if (!isTyping && newChat.typingUsers.includes(sender)) {
-              newChat.typingUsers = newChat.typingUsers.filter(u => u !== sender)
+            if (isTyping && !chat.typingUsers.includes(sender)) {
+              chat.typingUsers.push(sender)
+            } else if (!isTyping && chat.typingUsers.includes(sender)) {
+              chat.typingUsers = chat.typingUsers.filter(u => u !== sender)
             }
           }
-          return newChat
+          return chat
         })
-        dispatch(setChats(newChats3))
+        dispatch(setChats(newChats))
       }
-    })
-
+    }
   }
 
   var addUserToChat = ({ chatId, newUser }) => {

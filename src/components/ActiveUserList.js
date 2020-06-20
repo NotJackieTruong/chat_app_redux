@@ -7,7 +7,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader'
 import IconButton from '@material-ui/core/IconButton'
 
-import { useSelector } from 'react-redux'
+import { useSelector, useStore } from 'react-redux'
 import { PRIVATE_CHAT } from '../Events'
 
 
@@ -43,11 +43,11 @@ const ActiveUser = (props) => {
 
 const ActiveUserList = () => {
   const classes = useStyles();
-
+  const store = useStore()
   const userList = useSelector(state => state.userReducer.userList)
   const user = useSelector(state => state.userReducer.user)
   const socket = useSelector(state => state.socketReducer.socket)
-  const activeChat = useSelector(state => state.chatReducer.activeChat)
+  // const activeChat = useSelector(state => state.chatReducer.activeChat)
   const chats = useSelector(state => state.chatReducer.chats)
 
   var sendPrivateMessage = (receiver) => {
@@ -57,6 +57,7 @@ const ActiveUserList = () => {
 
   var handleOnClick = (receiver) => {
     sendPrivateMessage(receiver)
+    console.log(store.getState().chatReducer.chats)
   }
   return (
     <div className={classes.root}>
