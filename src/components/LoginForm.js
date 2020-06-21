@@ -1,14 +1,12 @@
 import React, { useState } from 'react'
 
 import { makeStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import AccountCircle from '@material-ui/icons/AccountCircle';
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
 
 // import dispatch, selector
 import { useDispatch, useSelector } from 'react-redux'
-import { setNickname, setUser, setReceiver } from '../actions/userActions'
+import { setNickname, setUser } from '../actions/userActions'
 
 import { VERIFY_USER, USER_CONNECTED } from '../Events'
 
@@ -31,7 +29,8 @@ const useStyles = makeStyles((theme) => ({
   error: {
     color: '#fa3e3e',
     fontSize: 'large',
-    margin: '2vh 0'
+    margin: '2vh 0',
+    textAlign: 'center'
   }
 }));
 
@@ -78,7 +77,7 @@ var LoginForm = () => {
           variant="outlined"
         />
         <div className={classes.error} >{error ? error : null}</div>
-        <Button type="submit" fullWidth={true} color="primary" variant="contained">Enter</Button>
+        <Button type="submit" fullWidth={true} color="primary" variant="contained">Login</Button>
 
 
       </form>

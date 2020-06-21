@@ -14,9 +14,8 @@ const useStyles = makeStyles(() => ({
     maxWidth: '20vw'
   },
   time: {
-    padding: '0.01vh 0 0.01vh 1vw',
-    margin: '0 0.5%',
-    marginTop: '1vh'
+    margin: '1vh 0.5% 0 1.2%',
+   
   },
   hidden:{
     marginTop: '1vh',
@@ -24,7 +23,8 @@ const useStyles = makeStyles(() => ({
   },
   show: {
     marginTop: '1vh',
-    visibility: 'visible'
+    visibility: 'visible',
+    padding: '5px 0'
   }
 }))
 
@@ -48,6 +48,15 @@ const MessageList = () => {
   const user = useSelector(state => state.userReducer.user)
   console.log('messages: ', activeChat.messages)
   const classes = useStyles()
+
+  const randomColor = ()=>{
+    let r = Math.round((Math.random() * 255)); //red 0 to 255
+    let g = Math.round((Math.random() * 255)); //green 0 to 255
+    let b = Math.round((Math.random() * 255)); //blue 0 to 255
+    let a = Math.round((Math.random() * 1)); // alpha 0 to 1
+    return 'rgb(' + r + ', ' + g + ', ' + b + ', ' + a + ')';
+  }
+
   return (
     <div>
       {
@@ -56,14 +65,14 @@ const MessageList = () => {
             return (
               <div key={mes.id} className={`message-container ${mes.sender === user.name && "right"}`}>
                 <div className={`icon ${mes.sender === user.name? `${classes.hidden}`:`${classes.show}`}`}>
-                  <IconButton size="small">
+                  <IconButton size="small" style={{width: 40, height: 40, borderRadius: '50%'}}>
                     {mes.sender[0].toUpperCase()}
                   </IconButton>
                 </div>
                 <div className={`message ${classes.message}`}>
                   <p>{mes.message}</p>
                 </div>
-                <div className={classes.time}><p>{mes.time}</p></div>
+                <div className={classes.time}><p style={{fontSize: 'small', color: 'rgba(0, 0, 0, 0.4)', padding: '4px 0'}}>{mes.time}</p></div>
               </div>
             )
 

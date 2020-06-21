@@ -102,8 +102,8 @@ const ChatHeading = () => {
   const activeChat = useSelector(state => state.chatReducer.activeChat)
 
   return (
-    <div className="heading-container" style={{ height: 48, borderBottom: '1px solid lightgrey' }}>
-      <div className="container" style={{ margin: '0 1vw', padding: '1vh 0', }}>
+    <div className="heading-container" style={{ height: 52, borderBottom: '1px solid lightgrey' }}>
+      <div className="container" style={{ padding: '1vh 1vw', height: '100%'}}>
         <Grid container style={{ height: 'fit-content' }}>
           <Grid item xs><h2 style={{ margin: 0, padding: 0 }}>{activeChat.name}</h2></Grid>
           <Grid item xs={2}>

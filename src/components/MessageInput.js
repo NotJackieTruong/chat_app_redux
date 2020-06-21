@@ -86,7 +86,6 @@ const MessageInput = (props) => {
           </Grid>
           <Grid item xs={1}>
             <Button color="secondary" disabled={message.length < 1} type="submit" size="small">Send</Button>
-
           </Grid>
 
         </Grid>

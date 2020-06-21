@@ -61,7 +61,11 @@ const ActiveUserList = () => {
 
   return (
     <div className={classes.root}>
-      <ListSubheader disableGutters={true} style={{ borderBottom: '1px solid lightgrey', backgroundColor: 'white', width: '100%' }}>Active users</ListSubheader>
+      <ListSubheader 
+        disableGutters={true} 
+        style={{ backgroundColor: 'white', width: '100%', height: 52, textAlign: 'center' }}>
+          Active users
+      </ListSubheader>
 
       <div className={classes.listContainer}>
         <List component="nav" aria-label="main mailbox folders" className={classes.list}>

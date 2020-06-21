@@ -13,6 +13,8 @@ import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import Fade from '@material-ui/core/Fade'
 import Tooltip from '@material-ui/core/Tooltip'
+import Modal from '@material-ui/core/Modal';
+import Backdrop from '@material-ui/core/Backdrop';
 
 // import socket events
 import { PRIVATE_CHAT } from '../Events'
@@ -52,6 +54,7 @@ const useStyles = makeStyles((theme) => ({
   },
   inputRoot: {
     color: 'inherit',
+    height: 42
   },
   inputInput: {
     padding: theme.spacing(1, 1, 1, 0),
@@ -65,10 +68,11 @@ const useStyles = makeStyles((theme) => ({
     height: '12px',
   },
   icons: {
-    fontSize: 30
+    fontSize: 22
   },
   buttons: {
-    backgroundColor: 'rgba(0, 0, 0, .04)'
+    backgroundColor: 'rgba(0, 0, 0, .04)',
+    padding: '0.8vh'
   },
   chats: {
     "&:hover": {
@@ -76,31 +80,62 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: 'rgba(0, 0, 0, .04)',
       borderRadius: '10px'
     }
-  }
+  },
+  active: {
+    backgroundColor: 'rgba(0, 0, 0, .04)',
+    borderRadius: '10px'
+  },
+  modal: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  paper: {
+    backgroundColor: theme.palette.background.paper,
+    border: '2px solid #000',
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+  },
 }))
 
 const SidebarHeader = (props) => {
   const dispatch = useDispatch()
   const user = useSelector(state => state.userReducer.user)
+  const classes = useStyles()
 
+  const [openModal, setOpenModal] = useState(false);
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  // open menu list when clicking into user account icon
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
 
-  const handleClick = (e) => {
+  const handleOpenMenu = (e) => {
     setAnchorEl(e.currentTarget)
   }
 
-  const handleClose = () => {
+  const handleCloseMenu = () => {
     setAnchorEl(null)
   }
 
-  const classes = useStyles()
+
+  const handleOpenActiveUserList = () => {
+
+  }
+
   return (
-    <div className="sidebar-header" style={{ height: 'fit-content', margin: '0 0.8vw', padding: '1vh 0' }}>
-      <Grid container>
+    <div className="sidebar-header" style={{ height: 'fit-content', margin: '0 0.8vw', maxHeight: 52 }}>
+      <Grid container style={{ height: 52 }}>
         <Grid item xs>
           <Tooltip title="User account" placement="bottom-end">
-            <IconButton size="medium" onClick={handleClick}>
+            <IconButton size="medium" onClick={handleOpenMenu}>
               {/* <AccountCircle className={classes.icons}/> */}
               {JSON.stringify(user) !== '{}' ? user.name[0].toUpperCase() : "Unknown"[0].toUpperCase()}
             </IconButton>
@@ -113,18 +148,17 @@ const SidebarHeader = (props) => {
             anchorEl={anchorEl}
             keepMounted
             open={open}
-            onClose={handleClose}
+            onClose={handleCloseMenu}
             TransitionComponent={Fade}
             anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
             getContentAnchorEl={null}
           >
-            <MenuItem onClick={handleClose}>Profile</MenuItem>
-            <MenuItem onClick={() => { handleClose(); dispatch(logout()) }}>Logout</MenuItem>
+            <MenuItem onClick={handleCloseMenu}>Profile</MenuItem>
+            <MenuItem onClick={() => { handleCloseMenu(); dispatch(logout()) }}>Logout</MenuItem>
           </Menu>
 
         </Grid>
-        <Grid item container xs style={{ float: 'right' }}>
-          <Grid item xs></Grid>
+        <Grid item container xs={4} style={{ float: 'right', padding: '0.6vh' }}>
           <Grid item xs>
             <Tooltip title="Settings" placement="bottom-end">
               <IconButton size="small" className={classes.buttons}>
@@ -143,11 +177,29 @@ const SidebarHeader = (props) => {
           </Grid>
           <Grid item xs>
             <Tooltip title="Write new messages" placement="bottom-end">
-              <IconButton size="small" className={classes.buttons}>
+              <IconButton size="small" className={classes.buttons} onClick={handleOpenModal}>
                 <AddCommentIcon className={classes.icons} />
               </IconButton>
             </Tooltip>
-
+            <Modal
+              aria-labelledby="transition-modal-title"
+              aria-describedby="transition-modal-description"
+              className={classes.modal}
+              open={openModal}
+              onClose={handleCloseModal}
+              closeAfterTransition
+              BackdropComponent={Backdrop}
+              BackdropProps={{
+                timeout: 500,
+              }}
+            >
+              <Fade in={openModal}>
+                <div className={classes.paper}>
+                  <h2 id="transition-modal-title">Transition modal</h2>
+                  <p id="transition-modal-description">react-transition-group animates me.</p>
+                </div>
+              </Fade>
+            </Modal>
           </Grid>
         </Grid>
       </Grid>
@@ -163,6 +215,7 @@ const SidebarSearch = (props) => {
   const socket = useSelector(state => state.socketReducer.socket)
   const user = useSelector(state => state.userReducer.user)
   const activeChat = useSelector(state => state.chatReducer.activeChat)
+
   console.log('activeChat: ', activeChat)
   var handleSubmit = (e) => {
     e.preventDefault()
@@ -170,7 +223,7 @@ const SidebarSearch = (props) => {
     dispatch(setReceiver(""))
   }
   return (
-    <div className={classes.search} style={{ height: 'fit-content', margin: '0 1vw', backgroundColor: 'rgba(0, 0, 0, .04)' }}>
+    <div className={classes.search} style={{ height: 42, margin: '0.5vh 1vw', backgroundColor: 'rgba(0, 0, 0, .04)' }}>
       <form onSubmit={handleSubmit}>
         <div className={classes.searchIcon}>
           <SearchIcon style={{ color: 'rgba(0, 0, 0, 0.54)' }} />
@@ -198,6 +251,7 @@ const ChatList = () => {
   const dispatch = useDispatch()
   const chats = useSelector(state => state.chatReducer.chats)
   const user = useSelector(state => state.userReducer.user)
+  const activeChat = useSelector(state => state.chatReducer.activeChat)
 
   return (
     <div className="active-chat" style={{ marginTop: '2vh' }}>
@@ -214,14 +268,16 @@ const ChatList = () => {
               className={classes.chats}
               style={{ height: 48, margin: '1vh 0.8vw', }}
               key={chat.id}
-              onClick={() => { dispatch(setActiveChat(chat)) }}>
+              onClick={() => { dispatch(setActiveChat(chat)) }}
+
+            >
               <Grid container>
                 <Grid item xs sm={2}>
                   <IconButton size="medium" >
                     {name[0].toUpperCase()}
                   </IconButton>
                 </Grid>
-                <Grid item xs>
+                <Grid item xs style={{ padding: '0.8vh 0' }}>
                   <div className="chat-name" style={{ fontWeight: 'bold' }}>{name}</div>
                   <div className="chat-last-message" style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '15vw' }}>{lastMessage !== undefined ? lastMessage.message : 'No messages!'}</div>
                 </Grid>
