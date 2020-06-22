@@ -14,6 +14,7 @@ import ListItemText from '@material-ui/core/ListItemText'
 
 import { useSelector, useStore } from 'react-redux'
 import { ADD_USER_TO_CHAT } from '../Events'
+import { setReceiver } from '../actions/userActions';
 
 const useStyles = makeStyles((theme) => ({
   buttons: {
@@ -37,11 +38,14 @@ const AddIconModal = () => {
   const user = useSelector(state => state.userReducer.user)
   const activeChat = useSelector(state => state.chatReducer.activeChat)
   const socket = useSelector(state => state.socketReducer.socket)
+  const chats = useSelector(state => state.chatReducer.chats)
   const classes = useStyles();
   const [open, setOpen] = React.useState(false)
 
-  const sendPrivateMessage = (receiver) => {
-    socket.emit(ADD_USER_TO_CHAT, { receiver, activeChat })
+  const [receivers, setReceivers] = React.useState([])
+
+  const sendPrivateMessage = (receivers) => {
+    socket.emit(ADD_USER_TO_CHAT, { receivers, activeChat, chats })
   }
 
   const handleClick = () => {
@@ -50,6 +54,11 @@ const AddIconModal = () => {
 
   const handleClose = () => {
     setOpen(false)
+  }
+
+  const handleChooseReceivers = (receiver)=>{
+    setReceivers(receivers => [...receivers, receiver])
+
   }
 
   return (
@@ -78,7 +87,8 @@ const AddIconModal = () => {
                   return (
                     <ListItem key={activeUser.id} button onClick={() => {
                       console.log('receiver: ', activeUser);
-                      sendPrivateMessage(activeUser);
+                      // sendPrivateMessage(activeUser);
+                      handleChooseReceivers(activeUser.name);
                       handleClose();
                     }}>
                       <ListItemIcon>
@@ -90,6 +100,7 @@ const AddIconModal = () => {
                 })) : (<div>No active user</div>)
               }
             </List>
+            <Button onClick={()=>sendPrivateMessage(receivers)}>Add to chat</Button>
           </div>
         </Fade>
       </Modal>
