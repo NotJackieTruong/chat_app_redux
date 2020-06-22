@@ -106,7 +106,7 @@ module.exports = function (socket) {
 
   socket.on(PRIVATE_CHAT, ({sender, receivers, chats})=>{
     const groupOfUsers = [...receivers, sender]
-    console.log('group of users: ', groupOfUsers)
+    console.log('group of users: ', receivers)
 
     var isCreated = null
     // if there are chats at the moment
@@ -121,7 +121,7 @@ module.exports = function (socket) {
       })
 
       if(isCreated === false){
-        const newChat = createChat({name: `${"mno"},${groupOfUsers.map(user => ' '+user)}`, users: groupOfUsers})
+        const newChat = createChat({name: `${sender},${groupOfUsers.map(user => ' '+user)}`, users: groupOfUsers})
         groupOfUsers.filter(user => user in connectedUsers) // take all users that are in activeChat.users array out of connectedUsers object
                     .map(user => connectedUsers[user]) // get user object in connectedUsers
                     .map(user => {
@@ -130,7 +130,7 @@ module.exports = function (socket) {
         socket.emit(PRIVATE_CHAT, newChat)
       }
     } else {
-      const newChat = createChat({name: `${"mno"},${groupOfUsers.map(user => ' '+user)}`, users: groupOfUsers})
+      const newChat = createChat({name: `${sender},${groupOfUsers.map(user => ' '+user)}`, users: groupOfUsers})
         groupOfUsers.filter(user => user in connectedUsers) // take all users that are in activeChat.users array out of connectedUsers object
                     .map(user => connectedUsers[user]) // get user object in connectedUsers
                     .map(user => {

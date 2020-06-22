@@ -146,13 +146,14 @@ const SidebarHeader = (props) => {
   }
 
   const handleChooseReceivers = (receiver) => {
-    setReceivers(receivers=>[...receivers, receiver])
+    setReceivers(receivers => [...receivers, receiver])
   }
 
   const handleCreateNewChat = () => {
     console.log('user group: ', receivers)
     sendPrivateMessage(receivers)
     handleCloseModal()
+    setReceiver([])
   }
 
   return (
@@ -225,16 +226,12 @@ const SidebarHeader = (props) => {
                     {userList.length !== 0 ? (
                       userList.filter(activeUser => activeUser.name !== user.name).map((user) => {
                         return (
-
-
                           <ListItem key={user.id} button onClick={() => handleChooseReceivers(user.name)}>
                             <ListItemIcon>
                               <IconButton>{user.name[0].toUpperCase()}</IconButton>
                             </ListItemIcon>
                             <ListItemText primary={user.name} />
                           </ListItem>
-
-
                         )
                       })
                     ) : (<div></div>)}

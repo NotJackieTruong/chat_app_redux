@@ -12,8 +12,8 @@ import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 
-import { useSelector } from 'react-redux'
-import { PRIVATE_CHAT, ADD_USER_TO_CHAT } from '../Events'
+import { useSelector, useStore } from 'react-redux'
+import { ADD_USER_TO_CHAT } from '../Events'
 
 const useStyles = makeStyles((theme) => ({
   buttons: {
@@ -99,13 +99,14 @@ const AddIconModal = () => {
 
 const ChatHeading = () => {
   const classes = useStyles()
+  const store = useStore()
   const activeChat = useSelector(state => state.chatReducer.activeChat)
 
   return (
     <div className="heading-container" style={{ height: 52, borderBottom: '1px solid lightgrey' }}>
       <div className="container" style={{ padding: '1vh 1vw', height: '100%'}}>
         <Grid container style={{ height: 'fit-content' }}>
-          <Grid item xs><h2 style={{ margin: 0, padding: 0 }}>{activeChat.name}</h2></Grid>
+          <Grid item xs><h2 style={{ margin: 0, padding: 0 }}>{store.getState().chatReducer.activeChat.name}</h2></Grid>
           <Grid item xs={2}>
             {activeChat.name !== "Community" ? (<AddIconModal />) : (<div></div>)}
           </Grid>
