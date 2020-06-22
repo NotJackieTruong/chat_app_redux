@@ -46,7 +46,7 @@ const TypingIndicator = (props) => {
 const MessageList = () => {
   const activeChat = useSelector(state => state.chatReducer.activeChat)
   const user = useSelector(state => state.userReducer.user)
-  console.log('messages: ', activeChat.messages)
+  
   const classes = useStyles()
 
   const randomColor = ()=>{

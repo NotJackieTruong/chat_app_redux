@@ -112,10 +112,6 @@ const SidebarHeader = (props) => {
   const socket = useSelector(state => state.socketReducer.socket)
 
   const classes = useStyles()
-  console.log('activeChat: ', activeChat)
-  console.log('user: ', user)
-  console.log('userList: ', userList)
-  console.log('chats: ', chats)
 
   const [receivers, setReceivers] = useState([])
   const [openModal, setOpenModal] = useState(false);

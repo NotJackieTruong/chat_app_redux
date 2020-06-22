@@ -57,6 +57,7 @@ const ActiveUserList = () => {
 
   var handleOnClick = (receiver) => {
     sendPrivateMessage([receiver])
+    
   }
 
   return (

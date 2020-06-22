@@ -1,6 +1,7 @@
 const io = require('./index').io
 const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, MESSAGE_RECEIVED, MESSAGE_SENT, USER_DISCONNECTED, TYPING, PRIVATE_CHAT, NEW_CHAT_USER, ADD_USER_TO_CHAT } = require("../Events") // import namespaces
 const { createMessage, createChat, createUser } = require('../Factories')
+const { act } = require('react-dom/test-utils')
 
 let connectedUsers = {} // list of connected users
 let communityChat = createChat({ isCommunity: true })
@@ -104,51 +105,51 @@ module.exports = function (socket) {
   //   }
   // })
 
-  socket.on(PRIVATE_CHAT, ({sender, receivers, chats})=>{
+  socket.on(PRIVATE_CHAT, ({ sender, receivers, chats }) => {
     const groupOfUsers = [...receivers, sender]
-    console.log('group of users: ', receivers)
 
-    var isCreated = null
     // if there are chats at the moment
-    if(chats){
+    if (chats) {
       // check if there exists the chat
-      chats.some(chat=>{
-        if(JSON.stringify(chat.users.sort()) === JSON.stringify(groupOfUsers.sort())){
-          return isCreated = true
-        } else {
-          isCreated = false
-        }
-      })
-
-      if(isCreated === false){
-        const newChat = createChat({name: `${sender},${groupOfUsers.map(user => ' '+user)}`, users: groupOfUsers})
+      if (!checkIsCreated(groupOfUsers, chats)) {
+        const newChat = createChat({ name: `${sender},${groupOfUsers.map(user => ' ' + user)}`, users: groupOfUsers })
         groupOfUsers.filter(user => user in connectedUsers) // take all users that are in activeChat.users array out of connectedUsers object
-                    .map(user => connectedUsers[user]) // get user object in connectedUsers
-                    .map(user => {
-                      socket.to(user.socketId).emit(PRIVATE_CHAT, newChat)
-                    })
+          .map(user => connectedUsers[user]) // get user object in connectedUsers
+          .map(user => {
+            socket.to(user.socketId).emit(PRIVATE_CHAT, newChat)
+          })
         socket.emit(PRIVATE_CHAT, newChat)
       }
+
     } else {
-      const newChat = createChat({name: `${sender},${groupOfUsers.map(user => ' '+user)}`, users: groupOfUsers})
-        groupOfUsers.filter(user => user in connectedUsers) // take all users that are in activeChat.users array out of connectedUsers object
-                    .map(user => connectedUsers[user]) // get user object in connectedUsers
-                    .map(user => {
-                      socket.to(user.socketId).emit(PRIVATE_CHAT, newChat)
-                    })
-        socket.emit(PRIVATE_CHAT, newChat)
+      const newChat = createChat({ name: `${sender},${groupOfUsers.map(user => ' ' + user)}`, users: groupOfUsers })
+      groupOfUsers.filter(user => user in connectedUsers) // take all users that are in activeChat.users array out of connectedUsers object
+        .map(user => connectedUsers[user]) // get user object in connectedUsers
+        .map(user => {
+          socket.to(user.socketId).emit(PRIVATE_CHAT, newChat)
+        })
+      socket.emit(PRIVATE_CHAT, newChat)
     }
   })
 
-  socket.on(ADD_USER_TO_CHAT, ({receiver, activeChat})=>{
-    const receiverSocket = receiver.socketId
-    activeChat.users.filter(user => user in connectedUsers) // take all users that are in activeChat.users array out of connectedUsers object
-                    .map(user => connectedUsers[user]) // get user object in connectedUsers
-                    .map(user => {
-                      socket.to(user.socketId).emit(NEW_CHAT_USER, {chatId: activeChat.id, newUser: receiver})
-                    })
-    socket.emit(NEW_CHAT_USER, {chatId: activeChat.id, newUser: receiver})
-    socket.to(receiverSocket).emit(PRIVATE_CHAT, activeChat)
+  socket.on(ADD_USER_TO_CHAT, ({ receivers, activeChat, chats }) => {
+    // const receiverSocket = receiver.socketId
+    const groupOfUsers = activeChat.users.concat(receivers)
+    if (!checkIsCreated(groupOfUsers, chats)) {
+      activeChat.users.filter(user => user in connectedUsers) // take all users that are in activeChat.users array out of connectedUsers object
+        .map(user => connectedUsers[user]) // get user object in connectedUsers
+        .map(user => {
+          socket.to(user.socketId).emit(NEW_CHAT_USER, { chatId: activeChat.id, newUser: receivers })
+        })
+      socket.emit(NEW_CHAT_USER, { chatId: activeChat.id, newUser: receivers })
+      receivers.filter(user => user in connectedUsers)
+                  .map(user => connectedUsers[user])
+                  .map(user => {
+                    socket.to(user.socketId).emit(PRIVATE_CHAT, activeChat)
+                  })
+      
+    }
+
 
   })
 
@@ -186,6 +187,20 @@ function sendTypingToChat(sender) {
   return (chatId, isTyping) => {
     io.emit(`${TYPING}-${chatId}`, { sender, isTyping })
   }
+}
+
+// function to check if a chat is exists
+function checkIsCreated(groupOfUsers, chats) {
+  var isCreated = null
+  chats.some(chat => {
+    if (JSON.stringify(chat.users.sort()) === JSON.stringify(groupOfUsers.sort())) {
+      return isCreated = true
+    } else {
+      isCreated = false
+    }
+  })
+  return isCreated
+
 }
 
 function sendPrivateMessageToChat(sender, receiver) {
