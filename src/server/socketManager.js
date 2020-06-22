@@ -76,31 +76,67 @@ module.exports = function (socket) {
   })
 
   // receive private chat event
-  socket.on(PRIVATE_CHAT, ({ sender, receiver, chats }) => {
-    if (receiver in connectedUsers) { // make sure that the receiver is online
-      const receiverSocket = connectedUsers[receiver].socketId // connectedUsers.receiver.socketId
-      var isCreated = null
-      if (chats) {
-        chats.some((chat) => {
-          if (JSON.stringify(chat.users.sort()) === JSON.stringify([sender, receiver].sort())) {
-            return isCreated = true
-          } else {
-            isCreated = false
-          }
-        })
-        if (isCreated == false) {
-          const newChat = createChat({ name: `${sender},${receiver}`, users: [receiver, sender] })
-          // only sending message to sender client if they are in 'sender' room (chanel)
-          socket.to(receiverSocket).emit(PRIVATE_CHAT, newChat)
-          socket.emit(PRIVATE_CHAT, newChat)
+  // socket.on(PRIVATE_CHAT, ({ sender, receivers, chats }) => {
+  //   if (receiver in connectedUsers) { // make sure that the receiver is online
+  //     const receiverSocket = connectedUsers[receiver].socketId // connectedUsers.receiver.socketId
+  //     var isCreated = null
+  //     if (chats) {
+  //       chats.some((chat) => {
+  //         if (JSON.stringify(chat.users.sort()) === JSON.stringify([sender, receiver].sort())) {
+  //           return isCreated = true
+  //         } else {
+  //           isCreated = false
+  //         }
+  //       })
+  //       if (isCreated == false) {
+  //         const newChat = createChat({ name: `${sender},${receiver}`, users: [receiver, sender] })
+  //         // only sending message to sender client if they are in 'sender' room (chanel)
+  //         socket.to(receiverSocket).emit(PRIVATE_CHAT, newChat)
+  //         socket.emit(PRIVATE_CHAT, newChat)
+  //       }
+  //     } else {
+  //       const newChat = createChat({ name: `${sender},${receiver}`, users: [receiver, sender] })
+  //       // only sending message to sender client if they are in 'sender' room (chanel)
+  //       socket.to(receiverSocket).emit(PRIVATE_CHAT, newChat)
+  //       socket.emit(PRIVATE_CHAT, newChat)
+  //     }
+
+  //   }
+  // })
+
+  socket.on(PRIVATE_CHAT, ({sender, receivers, chats})=>{
+    const groupOfUsers = [...receivers, sender]
+    console.log('group of users: ', groupOfUsers)
+
+    var isCreated = null
+    // if there are chats at the moment
+    if(chats){
+      // check if there exists the chat
+      chats.some(chat=>{
+        if(JSON.stringify(chat.users.sort()) === JSON.stringify(groupOfUsers.sort())){
+          return isCreated = true
+        } else {
+          isCreated = false
         }
-      } else {
-        const newChat = createChat({ name: `${sender},${receiver}`, users: [receiver, sender] })
-        // only sending message to sender client if they are in 'sender' room (chanel)
-        socket.to(receiverSocket).emit(PRIVATE_CHAT, newChat)
+      })
+
+      if(isCreated === false){
+        const newChat = createChat({name: `${"mno"},${groupOfUsers.map(user => ' '+user)}`, users: groupOfUsers})
+        groupOfUsers.filter(user => user in connectedUsers) // take all users that are in activeChat.users array out of connectedUsers object
+                    .map(user => connectedUsers[user]) // get user object in connectedUsers
+                    .map(user => {
+                      socket.to(user.socketId).emit(PRIVATE_CHAT, newChat)
+                    })
         socket.emit(PRIVATE_CHAT, newChat)
       }
-
+    } else {
+      const newChat = createChat({name: `${"mno"},${groupOfUsers.map(user => ' '+user)}`, users: groupOfUsers})
+        groupOfUsers.filter(user => user in connectedUsers) // take all users that are in activeChat.users array out of connectedUsers object
+                    .map(user => connectedUsers[user]) // get user object in connectedUsers
+                    .map(user => {
+                      socket.to(user.socketId).emit(PRIVATE_CHAT, newChat)
+                    })
+        socket.emit(PRIVATE_CHAT, newChat)
     }
   })
 

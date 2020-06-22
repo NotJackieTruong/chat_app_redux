@@ -15,12 +15,17 @@ import Fade from '@material-ui/core/Fade'
 import Tooltip from '@material-ui/core/Tooltip'
 import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import ListItemText from '@material-ui/core/ListItemText'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import Button from '@material-ui/core/Button'
 
 // import socket events
 import { PRIVATE_CHAT } from '../Events'
 import { createChatNameFromUser } from '../Factories'
 
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector, useStore } from 'react-redux'
 import { logout, setReceiver } from '../actions/userActions'
 import { setActiveChat } from '../actions/chatActions'
 
@@ -101,8 +106,18 @@ const useStyles = makeStyles((theme) => ({
 const SidebarHeader = (props) => {
   const dispatch = useDispatch()
   const user = useSelector(state => state.userReducer.user)
-  const classes = useStyles()
+  const userList = useSelector(state => state.userReducer.userList)
+  const activeChat = useSelector(state => state.chatReducer.activeChat)
+  const chats = useSelector(state => state.chatReducer.chats)
+  const socket = useSelector(state => state.socketReducer.socket)
 
+  const classes = useStyles()
+  console.log('activeChat: ', activeChat)
+  console.log('user: ', user)
+  console.log('userList: ', userList)
+  console.log('chats: ', chats)
+
+  const [receivers, setReceivers] = useState([])
   const [openModal, setOpenModal] = useState(false);
 
   const handleOpenModal = () => {
@@ -125,9 +140,19 @@ const SidebarHeader = (props) => {
     setAnchorEl(null)
   }
 
+  const sendPrivateMessage = (receivers) => {
+    socket.emit(PRIVATE_CHAT, { sender: user.name, receivers, chats })
 
-  const handleOpenActiveUserList = () => {
+  }
 
+  const handleChooseReceivers = (receiver) => {
+    setReceivers(receivers=>[...receivers, receiver])
+  }
+
+  const handleCreateNewChat = () => {
+    console.log('user group: ', receivers)
+    sendPrivateMessage(receivers)
+    handleCloseModal()
   }
 
   return (
@@ -195,8 +220,26 @@ const SidebarHeader = (props) => {
             >
               <Fade in={openModal}>
                 <div className={classes.paper}>
-                  <h2 id="transition-modal-title">Transition modal</h2>
-                  <p id="transition-modal-description">react-transition-group animates me.</p>
+                  <List component="nav" aria-label="main mailbox folders" className={classes.list}>
+                    <div className="to" style={{ textAlign: 'center', borderBottom: '1px solid lightgrey' }}>To: </div>
+                    {userList.length !== 0 ? (
+                      userList.filter(activeUser => activeUser.name !== user.name).map((user) => {
+                        return (
+
+
+                          <ListItem key={user.id} button onClick={() => handleChooseReceivers(user.name)}>
+                            <ListItemIcon>
+                              <IconButton>{user.name[0].toUpperCase()}</IconButton>
+                            </ListItemIcon>
+                            <ListItemText primary={user.name} />
+                          </ListItem>
+
+
+                        )
+                      })
+                    ) : (<div></div>)}
+                    <Button onClick={handleCreateNewChat}>Create Chat</Button>
+                  </List>
                 </div>
               </Fade>
             </Modal>
@@ -216,7 +259,6 @@ const SidebarSearch = (props) => {
   const user = useSelector(state => state.userReducer.user)
   const activeChat = useSelector(state => state.chatReducer.activeChat)
 
-  console.log('activeChat: ', activeChat)
   var handleSubmit = (e) => {
     e.preventDefault()
     socket.emit(PRIVATE_CHAT, { sender: user.name, receiver, activeChat })

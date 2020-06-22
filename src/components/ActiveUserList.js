@@ -50,7 +50,7 @@ const ActiveUserList = () => {
   // const activeChat = useSelector(state => state.chatReducer.activeChat)
   const chats = useSelector(state => state.chatReducer.chats)
 
-  var sendPrivateMessage = (receiver) => {
+  const sendPrivateMessage = (receiver) => {
     socket.emit(PRIVATE_CHAT, { sender: user.name, receiver, chats })
 
   }
