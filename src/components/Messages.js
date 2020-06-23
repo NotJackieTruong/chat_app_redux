@@ -89,8 +89,7 @@ const Messages = (props) => {
   const classes = useStyles()
 
   const activeChat = useSelector(state => state.chatReducer.activeChat)
-  const user = useSelector(state => state.userReducer.user)
-
+  const store = useStore()
   // auto scroll down function
   const messagesEndRef = useRef(null)
 
@@ -109,9 +108,9 @@ const Messages = (props) => {
         <MessageList />
         <div ref={messagesEndRef} />
         {
-          activeChat.typingUsers.map((name) => {
+          store.getState().chatReducer.activeChat.typingUsers.map((name) => {
             return (
-              <TypingIndicator typing={`${name} is typing`} />
+              <TypingIndicator key={activeChat.id} typing={`${name} is typing`} />
             )
           })
         }

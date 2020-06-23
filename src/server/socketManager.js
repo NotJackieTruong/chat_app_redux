@@ -1,5 +1,5 @@
 const io = require('./index').io
-const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, MESSAGE_RECEIVED, MESSAGE_SENT, USER_DISCONNECTED, TYPING, PRIVATE_CHAT, NEW_CHAT_USER, ADD_USER_TO_CHAT, SEND_CHAT_TO_USERS } = require("../Events") // import namespaces
+const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, MESSAGE_RECEIVED, MESSAGE_SENT, USER_DISCONNECTED, TYPING, PRIVATE_CHAT, NEW_CHAT_USER, ADD_USER_TO_CHAT } = require("../Events") // import namespaces
 const { createMessage, createChat, createUser } = require('../Factories')
 const { act } = require('react-dom/test-utils')
 
@@ -77,34 +77,6 @@ module.exports = function (socket) {
   })
 
   // receive private chat event
-  // socket.on(PRIVATE_CHAT, ({ sender, receivers, chats }) => {
-  //   if (receiver in connectedUsers) { // make sure that the receiver is online
-  //     const receiverSocket = connectedUsers[receiver].socketId // connectedUsers.receiver.socketId
-  //     var isCreated = null
-  //     if (chats) {
-  //       chats.some((chat) => {
-  //         if (JSON.stringify(chat.users.sort()) === JSON.stringify([sender, receiver].sort())) {
-  //           return isCreated = true
-  //         } else {
-  //           isCreated = false
-  //         }
-  //       })
-  //       if (isCreated == false) {
-  //         const newChat = createChat({ name: `${sender},${receiver}`, users: [receiver, sender] })
-  //         // only sending message to sender client if they are in 'sender' room (chanel)
-  //         socket.to(receiverSocket).emit(PRIVATE_CHAT, newChat)
-  //         socket.emit(PRIVATE_CHAT, newChat)
-  //       }
-  //     } else {
-  //       const newChat = createChat({ name: `${sender},${receiver}`, users: [receiver, sender] })
-  //       // only sending message to sender client if they are in 'sender' room (chanel)
-  //       socket.to(receiverSocket).emit(PRIVATE_CHAT, newChat)
-  //       socket.emit(PRIVATE_CHAT, newChat)
-  //     }
-
-  //   }
-  // })
-
   socket.on(PRIVATE_CHAT, ({ sender, receivers, chats }) => {
     const groupOfUsers = [...receivers, sender]
 
@@ -146,16 +118,6 @@ module.exports = function (socket) {
       .map(user => connectedUsers[user])
       .map(user => {
         socket.to(user.socketId).emit(PRIVATE_CHAT, Object.assign({}, activeChat, {name: activeChat.users.concat(receivers).join(", "), users: activeChat.users.concat(receivers)}))
-      })
-  })
-
-  socket.on(SEND_CHAT_TO_USERS, ({ receivers, activeChat }) => {
-    console.log('receiver: ', receivers)
-    console.log('active chat: ', activeChat)
-    receivers.filter(user => user in connectedUsers)
-      .map(user => connectedUsers[user])
-      .map(user => {
-        socket.to(user.socketId).emit(PRIVATE_CHAT, activeChat)
       })
   })
 

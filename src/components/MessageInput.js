@@ -27,7 +27,7 @@ const MessageInput = (props) => {
 
   const socket = useSelector(state => state.socketReducer.socket)
   const activeChat = useSelector(state => state.chatReducer.activeChat)
-
+  const chats = useSelector(state => state.chatReducer.chats)
   var sendMessage = (chatId, message) => {
     socket.emit(MESSAGE_SENT, { chatId, message })
   }

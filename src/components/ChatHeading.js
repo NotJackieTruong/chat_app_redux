@@ -37,13 +37,11 @@ const useStyles = makeStyles((theme) => ({
 const AddIconModal = () => {
   const store = useStore()
   const userList = useSelector(state => state.userReducer.userList)
-  const user = useSelector(state => state.userReducer.user)
   const activeChat = useSelector(state => state.chatReducer.activeChat)
   const socket = useSelector(state => state.socketReducer.socket)
-  const chats = useSelector(state => state.chatReducer.chats)
+  
   const classes = useStyles();
   const [open, setOpen] = React.useState(false)
-  console.log('active chat: ', activeChat)
   const [receivers, setReceivers] = React.useState([])
 
   const addUserToChat = (receivers) => {

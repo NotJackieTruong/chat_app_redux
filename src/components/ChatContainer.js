@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 // import custom components
 import Sidebar from './Sidebar'
 import ActiveUserList from './ActiveUserList'
-import { COMMUNITY_CHAT, MESSAGE_RECEIVED, TYPING, PRIVATE_CHAT, USER_CONNECTED, USER_DISCONNECTED, NEW_CHAT_USER, SEND_CHAT_TO_USERS } from '../Events'
+import { COMMUNITY_CHAT, MESSAGE_RECEIVED, TYPING, PRIVATE_CHAT, USER_CONNECTED, USER_DISCONNECTED, NEW_CHAT_USER } from '../Events'
 import ChatHeading from './ChatHeading'
 import Messages from './Messages'
 import MessageInput from './MessageInput'
@@ -12,11 +12,11 @@ import { useDispatch, useSelector, useStore } from 'react-redux'
 import { setUserList } from '../actions/userActions'
 import { setChats, setActiveChat } from '../actions/chatActions'
 
-const ChatContainer = (props) => {
+const ChatContainer = () => {
   const socket = useSelector(state => state.socketReducer.socket)
   const user = useSelector(state => state.userReducer.user)
   const chats = useSelector(state => state.chatReducer.chats)
-  const activeChat = useSelector(state => state.chatReducer.activeChat)
+
   const store = useStore()
   const dispatch = useDispatch()
 
@@ -61,7 +61,6 @@ const ChatContainer = (props) => {
   var resetChat = (chat) => {
     return addChat(chat, true)
   }
-  console.log('chats: ', store.getState().chatReducer.chats)
 
   var addChat = (chat, reset = false) => {
     const newChats = reset ? [chat] : [...store.getState().chatReducer.chats, chat]
@@ -77,10 +76,10 @@ const ChatContainer = (props) => {
 
     // receive typing event from typingEvent namespace
     socket.on(typingEvent, receiveTyping(chat.id))
-    
+
   }
 
-  var receiveMessage = (chatId)=>{
+  var receiveMessage = (chatId) => {
     return (message) => {
       var newChats = store.getState().chatReducer.chats.map((chat) => {
         // only append messages array of an active chat
@@ -93,9 +92,12 @@ const ChatContainer = (props) => {
     }
   }
 
-  var receiveTyping = (chatId)=>{
-    return({sender, isTyping})=>{
+  var receiveTyping = (chatId) => {
+    return ({ sender, isTyping }) => {
       // only show the "user is typing" for the client that is not the sender
+      console.log('isTyping: ', isTyping)
+      console.log('sender: ', sender)
+
       if (sender !== user.name) {
         var newChats = store.getState().chatReducer.chats.map((chat) => {
           if (chat.id === chatId) {
@@ -107,11 +109,19 @@ const ChatContainer = (props) => {
 
             // Scenerio 2: user is not typing
             // Remove objects that is current user and reassigns the active chat's typingUser array
-            if (isTyping && !chat.typingUsers.includes(sender)) {
+            if (isTyping === true && !chat.typingUsers.includes(sender)) {
               chat.typingUsers.push(sender)
-            } else if (!isTyping && chat.typingUsers.includes(sender)) {
+              console.log('that chat: ', chat.typingUsers)
+              console.log('active chat typing users: ', store.getState().chatReducer.activeChat.typingUsers)
+
+
+            } else if (isTyping === false && chat.typingUsers.includes(sender)) {
               chat.typingUsers = chat.typingUsers.filter(u => u !== sender)
+              console.log('that chat false: ', chat.typingUsers)
+              console.log('active chat typing users false: ', store.getState().chatReducer.activeChat.typingUsers)
+
             }
+
           }
           return chat
         })
@@ -123,13 +133,12 @@ const ChatContainer = (props) => {
   var addUserToChat = ({ chatId, newUser }) => {
     const newChats = store.getState().chatReducer.chats.map(chat => {
       if (chat.id === chatId) {
-        dispatch(setActiveChat(Object.assign({}, chat, {name: chat.users.concat(newUser).join(", "), users: chat.users.concat(newUser) })))
-        return Object.assign({}, chat, {name: chat.users.concat(newUser).join(", "), users: chat.users.concat(newUser) })
+        dispatch(setActiveChat(Object.assign({}, chat, { name: chat.users.concat(newUser).join(", "), users: chat.users.concat(newUser) })))
+        return Object.assign({}, chat, { name: chat.users.concat(newUser).join(", "), users: chat.users.concat(newUser) })
       }
       return chat
     })
     dispatch(setChats(newChats))
-    // socket.emit(SEND_CHAT_TO_USERS, { receivers: newUser, activeChat: store.getState().chatReducer.activeChat })
 
 
   }
