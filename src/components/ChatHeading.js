@@ -15,7 +15,6 @@ import Button from '@material-ui/core/Button'
 
 import { useSelector, useStore } from 'react-redux'
 import { ADD_USER_TO_CHAT } from '../Events'
-import { setReceiver } from '../actions/userActions';
 
 const useStyles = makeStyles((theme) => ({
   buttons: {
@@ -31,8 +30,12 @@ const useStyles = makeStyles((theme) => ({
     boxShadow: theme.shadows[5],
     borderRadius: '4px',
     width: '20vw',
-    height: '25vh'
+    minHeight: '25vh'
   },
+  list: {
+    height: '120px',
+    overflowY: 'scroll'
+  }
 }))
 
 const AddIconModal = () => {
@@ -46,7 +49,7 @@ const AddIconModal = () => {
   const [receivers, setReceivers] = React.useState([])
 
   const addUserToChat = (receivers) => {
-    if(receivers){
+    if (receivers) {
       socket.emit(ADD_USER_TO_CHAT, { receivers, activeChat, chats: store.getState().chatReducer.chats })
 
     }
@@ -62,7 +65,12 @@ const AddIconModal = () => {
   }
 
   const handleChooseReceivers = (receiver) => {
-    setReceivers(receivers => [...receivers, receiver])
+    if(!receivers.includes(receiver)){
+      setReceivers(receivers => [...receivers, receiver])
+
+    }
+
+    
 
   }
 
@@ -77,7 +85,7 @@ const AddIconModal = () => {
         aria-describedby="transition-modal-description"
         className={classes.modal}
         open={open}
-        onClose={handleClose}
+        onClose={()=>{handleClose(); setReceivers([])}}
         closeAfterTransition
         BackdropComponent={Backdrop}
         BackdropProps={{
@@ -86,12 +94,12 @@ const AddIconModal = () => {
       >
         <Fade in={open}>
           <div className={classes.paper}>
-            <div className="modal-header" style={{ borderBottom: '1px solid lightgrey', textAlign: 'center', padding: '7px 5px'}}>
+            <div className="modal-header" style={{ borderBottom: '1px solid lightgrey', textAlign: 'center', padding: '7px 5px' }}>
               <Grid container>
                 <Grid item xs={2}>
-                  <Button onClick={() => { handleClose(); setReceiver([]); }} color="secondary" size="small" >Cancel</Button>
+                  <Button onClick={() => { handleClose(); setReceivers([]); }} color="secondary" size="small" >Cancel</Button>
                 </Grid>
-                <Grid item xs style={{margin: 'auto', height: 'fit-content'}}>
+                <Grid item xs style={{ margin: 'auto', height: 'fit-content' }}>
                   <div>Add More People</div>
                 </Grid>
                 <Grid item xs={2}>
@@ -100,10 +108,21 @@ const AddIconModal = () => {
               </Grid>
 
             </div>
-            <div className="choosen-receivers" style={{height: 40, borderBottom: '1px solid lightgrey'}}>
-              <div>Add to group: </div>
+
+            <div className="chosen-receivers" style={{ minHeight: 40, width: '100%', borderBottom: '1px solid lightgrey', display: 'flex', flexWrap: 'wrap'}}>
+              {receivers.length ===0 ?(
+                <div className="title" style={{margin: 'auto 0', height: 'fit-content'}}>Add to group:</div>
+              ):(
+                receivers.map(receiver=>{
+                  return(
+                    <div className="receiver" style={{backgroundColor: 'lightblue', borderRadius: '2px', height: 'fit-content', width: 'fit-content', margin: '7px 5px', padding: '7px 5px'}}>{receiver}</div>
+               
+                  )
+                })
+              )}
 
             </div>
+
             <List component="nav" aria-label="main mailbox folders" className={classes.list}>
               {userList.filter(onlineUser => !store.getState().chatReducer.activeChat.users.includes(onlineUser.name)).length !== 0 ?
                 (userList.filter(onlineUser => !store.getState().chatReducer.activeChat.users.includes(onlineUser.name)).map((activeUser) => {
