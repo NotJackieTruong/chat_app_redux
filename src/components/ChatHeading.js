@@ -28,9 +28,10 @@ const useStyles = makeStyles((theme) => ({
   },
   paper: {
     backgroundColor: theme.palette.background.paper,
-    border: '2px solid #000',
     boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 3),
+    borderRadius: '4px',
+    width: '20vw',
+    height: '25vh'
   },
 }))
 
@@ -39,13 +40,16 @@ const AddIconModal = () => {
   const userList = useSelector(state => state.userReducer.userList)
   const activeChat = useSelector(state => state.chatReducer.activeChat)
   const socket = useSelector(state => state.socketReducer.socket)
-  
+
   const classes = useStyles();
   const [open, setOpen] = React.useState(false)
   const [receivers, setReceivers] = React.useState([])
 
   const addUserToChat = (receivers) => {
-    socket.emit(ADD_USER_TO_CHAT, { receivers, activeChat, chats: store.getState().chatReducer.chats })
+    if(receivers){
+      socket.emit(ADD_USER_TO_CHAT, { receivers, activeChat, chats: store.getState().chatReducer.chats })
+
+    }
 
   }
 
@@ -57,7 +61,7 @@ const AddIconModal = () => {
     setOpen(false)
   }
 
-  const handleChooseReceivers = (receiver)=>{
+  const handleChooseReceivers = (receiver) => {
     setReceivers(receivers => [...receivers, receiver])
 
   }
@@ -82,6 +86,24 @@ const AddIconModal = () => {
       >
         <Fade in={open}>
           <div className={classes.paper}>
+            <div className="modal-header" style={{ borderBottom: '1px solid lightgrey', textAlign: 'center', padding: '7px 5px'}}>
+              <Grid container>
+                <Grid item xs={2}>
+                  <Button onClick={() => { handleClose(); setReceiver([]); }} color="secondary" size="small" >Cancel</Button>
+                </Grid>
+                <Grid item xs style={{margin: 'auto', height: 'fit-content'}}>
+                  <div>Add More People</div>
+                </Grid>
+                <Grid item xs={2}>
+                  <Button onClick={() => { addUserToChat(receivers); handleClose(); setReceivers([]); }} color="primary" size="small" >Done</Button>
+                </Grid>
+              </Grid>
+
+            </div>
+            <div className="choosen-receivers" style={{height: 40, borderBottom: '1px solid lightgrey'}}>
+              <div>Add to group: </div>
+
+            </div>
             <List component="nav" aria-label="main mailbox folders" className={classes.list}>
               {userList.filter(onlineUser => !store.getState().chatReducer.activeChat.users.includes(onlineUser.name)).length !== 0 ?
                 (userList.filter(onlineUser => !store.getState().chatReducer.activeChat.users.includes(onlineUser.name)).map((activeUser) => {
@@ -100,7 +122,7 @@ const AddIconModal = () => {
                 })) : (<div>No active user</div>)
               }
             </List>
-            <Button onClick={()=>{addUserToChat(receivers); handleClose();setReceivers([]);}}>Add to chat</Button>
+
           </div>
         </Fade>
       </Modal>
@@ -115,7 +137,7 @@ const ChatHeading = () => {
 
   return (
     <div className="heading-container" style={{ height: 52, borderBottom: '1px solid lightgrey' }}>
-      <div className="container" style={{ padding: '1vh 1vw', height: '100%'}}>
+      <div className="container" style={{ padding: '1vh 1vw', height: '100%' }}>
         <Grid container style={{ height: 'fit-content' }}>
           <Grid item xs><h2 style={{ margin: 0, padding: 0 }}>{store.getState().chatReducer.activeChat.name}</h2></Grid>
           <Grid item xs={2}>

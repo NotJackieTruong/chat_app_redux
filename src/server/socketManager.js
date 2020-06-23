@@ -117,7 +117,6 @@ module.exports = function (socket) {
     receivers.filter(user => user in connectedUsers)
       .map(user => connectedUsers[user])
       .map(user => {
-        console.log('receiver: ', user)
         socket.to(user.socketId).emit(PRIVATE_CHAT, Object.assign({}, activeChat, {name: activeChat.users.concat(receivers).join(", "), users: activeChat.users.concat(receivers)}))
       })
   })
@@ -154,7 +153,6 @@ function sendMessageToChat(sender) {
 // function to send a typing event
 function sendTypingToChat(sender) {
   return (chatId, isTyping) => {
-    console.log(sender, ' isTyping: ', isTyping)
     io.emit(`${TYPING}-${chatId}`, { sender, isTyping })
   }
 }
