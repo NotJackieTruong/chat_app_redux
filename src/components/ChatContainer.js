@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 // import custom components
 import Sidebar from './Sidebar'
 import ActiveUserList from './ActiveUserList'
-import { COMMUNITY_CHAT, MESSAGE_RECEIVED, TYPING, PRIVATE_CHAT, USER_CONNECTED, USER_DISCONNECTED, NEW_CHAT_USER } from '../Events'
+import { COMMUNITY_CHAT, MESSAGE_RECEIVED, TYPING, PRIVATE_CHAT, USER_CONNECTED, USER_DISCONNECTED, NEW_CHAT_USER, SEND_CHAT_TO_USERS } from '../Events'
 import ChatHeading from './ChatHeading'
 import Messages from './Messages'
 import MessageInput from './MessageInput'
@@ -61,9 +61,9 @@ const ChatContainer = (props) => {
   var resetChat = (chat) => {
     return addChat(chat, true)
   }
+  console.log('chats: ', store.getState().chatReducer.chats)
 
   var addChat = (chat, reset = false) => {
-    console.log('chats: ', store.getState().chatReducer.chats)
     const newChats = reset ? [chat] : [...store.getState().chatReducer.chats, chat]
 
     dispatch(setChats(newChats))
@@ -123,11 +123,15 @@ const ChatContainer = (props) => {
   var addUserToChat = ({ chatId, newUser }) => {
     const newChats = store.getState().chatReducer.chats.map(chat => {
       if (chat.id === chatId) {
-        return Object.assign({}, chat, { users: chat.users.concat(newUser) })
+        dispatch(setActiveChat(Object.assign({}, chat, {name: chat.users.concat(newUser).join(", "), users: chat.users.concat(newUser) })))
+        return Object.assign({}, chat, {name: chat.users.concat(newUser).join(", "), users: chat.users.concat(newUser) })
       }
       return chat
     })
     dispatch(setChats(newChats))
+    // socket.emit(SEND_CHAT_TO_USERS, { receivers: newUser, activeChat: store.getState().chatReducer.activeChat })
+
+
   }
 
   // remove users from chat

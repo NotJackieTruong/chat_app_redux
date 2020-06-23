@@ -23,13 +23,11 @@
     position: relative;
     overflow-y: scroll;
     max-height: 85vh;
-    background-color: lightgreen;
 }
 
 .thread-container .thread{
     position: relative;
     width: 100%;
-    background-color: lightblue;
     min-height: 85vh;
     display: flex;
     flex-direction: column;

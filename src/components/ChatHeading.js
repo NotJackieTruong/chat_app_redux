@@ -35,6 +35,7 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 const AddIconModal = () => {
+  const store = useStore()
   const userList = useSelector(state => state.userReducer.userList)
   const user = useSelector(state => state.userReducer.user)
   const activeChat = useSelector(state => state.chatReducer.activeChat)
@@ -42,12 +43,12 @@ const AddIconModal = () => {
   const chats = useSelector(state => state.chatReducer.chats)
   const classes = useStyles();
   const [open, setOpen] = React.useState(false)
-
+  console.log('active chat: ', activeChat)
   const [receivers, setReceivers] = React.useState([])
 
   const addUserToChat = (receivers) => {
-    console.log('receivers: ', receivers)
-    socket.emit(ADD_USER_TO_CHAT, { receivers, activeChat, chats })
+    socket.emit(ADD_USER_TO_CHAT, { receivers, activeChat, chats: store.getState().chatReducer.chats })
+
   }
 
   const handleClick = () => {
@@ -84,8 +85,8 @@ const AddIconModal = () => {
         <Fade in={open}>
           <div className={classes.paper}>
             <List component="nav" aria-label="main mailbox folders" className={classes.list}>
-              {userList.filter(onlineUser => !activeChat.users.includes(onlineUser.name)).length !== 0 ?
-                (userList.filter(onlineUser => !activeChat.users.includes(onlineUser.name)).map((activeUser) => {
+              {userList.filter(onlineUser => !store.getState().chatReducer.activeChat.users.includes(onlineUser.name)).length !== 0 ?
+                (userList.filter(onlineUser => !store.getState().chatReducer.activeChat.users.includes(onlineUser.name)).map((activeUser) => {
                   return (
                     <ListItem key={activeUser.id} button onClick={() => {
                       console.log('receiver: ', activeUser);
@@ -101,7 +102,7 @@ const AddIconModal = () => {
                 })) : (<div>No active user</div>)
               }
             </List>
-            <Button onClick={()=>{addUserToChat(receivers); handleClose();}}>Add to chat</Button>
+            <Button onClick={()=>{addUserToChat(receivers); handleClose();setReceivers([]);}}>Add to chat</Button>
           </div>
         </Fade>
       </Modal>
