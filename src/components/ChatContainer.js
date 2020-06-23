@@ -95,30 +95,30 @@ const ChatContainer = () => {
   var receiveTyping = (chatId) => {
     return ({ sender, isTyping }) => {
       // only show the "user is typing" for the client that is not the sender
-      console.log('isTyping: ', isTyping)
-      console.log('sender: ', sender)
-
+    
       if (sender !== user.name) {
         var newChats = store.getState().chatReducer.chats.map((chat) => {
           if (chat.id === chatId) {
             // typingUser = [] (initiate)
 
-            // Scenario 1: user is typing
+            // Scenasrio 1: user is typing
             // active chat checks if the user is in typingUser array or not
             // if not, then active chat push user into the array
 
             // Scenerio 2: user is not typing
             // Remove objects that is current user and reassigns the active chat's typingUser array
-            if (isTyping === true && !chat.typingUsers.includes(sender)) {
+            if (isTyping && !chat.typingUsers.includes(sender)) {
               chat.typingUsers.push(sender)
-              console.log('that chat: ', chat.typingUsers)
-              console.log('active chat typing users: ', store.getState().chatReducer.activeChat.typingUsers)
+              // console.log('that chat: ', chat.typingUsers)
+              // console.log('active chat typing users: ', store.getState().chatReducer.activeChat.typingUsers)
 
 
-            } else if (isTyping === false && chat.typingUsers.includes(sender)) {
-              chat.typingUsers = chat.typingUsers.filter(u => u !== sender)
-              console.log('that chat false: ', chat.typingUsers)
-              console.log('active chat typing users false: ', store.getState().chatReducer.activeChat.typingUsers)
+            } else if (!isTyping && chat.typingUsers.includes(sender)) {
+              var index = chat.typingUsers.indexOf(sender)
+              if (index !== -1) chat.typingUsers.splice(index, 1)
+              // chat.typingUsers = chat.typingUsers.filter(u => u !== sender)
+              // console.log('that chat false: ', chat.typingUsers)
+              // console.log('active chat typing users false: ', store.getState().chatReducer.activeChat.typingUsers)
 
             }
 
@@ -133,7 +133,11 @@ const ChatContainer = () => {
   var addUserToChat = ({ chatId, newUser }) => {
     const newChats = store.getState().chatReducer.chats.map(chat => {
       if (chat.id === chatId) {
-        dispatch(setActiveChat(Object.assign({}, chat, { name: chat.users.concat(newUser).join(", "), users: chat.users.concat(newUser) })))
+        // Object.assign({}, store.getState().chatReducer.activeChat, { name: store.getState().chatReducer.activeChat.users.concat(newUser).join(", "), users: store.getState().chatReducer.activeChat.users.concat(newUser) })
+        if(chat.id === store.getState().chatReducer.activeChat.id){
+          dispatch(setActiveChat(Object.assign({}, chat, { name: chat.users.concat(newUser).join(", "), users: chat.users.concat(newUser) })))
+
+        }
         return Object.assign({}, chat, { name: chat.users.concat(newUser).join(", "), users: chat.users.concat(newUser) })
       }
       return chat
@@ -142,6 +146,7 @@ const ChatContainer = () => {
 
 
   }
+
 
   // remove users from chat
   var removeUsersFromChat = (removeUsers) => {
